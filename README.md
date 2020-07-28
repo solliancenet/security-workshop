@@ -1,6 +1,6 @@
 # Security-workshop
 
-Virtual Devintersection Security Workshop.
+Virtual Dev Intersection Security Workshop.
 
 ## Labs
 
@@ -10,7 +10,7 @@ Lab 1: Azure Key Vault, Managed Service Identities
 Lab 2: Log Analytics Customization
 Lab 3: Web Application Firewall
 Lab 4: IoT Hub with Azure Security Center for IoT
-Lab 5: Active Directory Security (Signins, MFA)
+Lab 5: Active Directory Security (Sign-ins, MFA)
 
 ### Day 2
 

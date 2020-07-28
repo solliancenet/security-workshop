@@ -7,43 +7,11 @@
       "metadata": {
         "description": "Suffix added to all resource name to make them unique."
       }
-    },
-    "sqlAdministratorLoginPassword": {
-      "type": "String",
-      "metadata": {
-        "description": "Password for SQL Admin"
-      }
     }
   },
   "variables": {
     "location": "[resourceGroup().location]",
-    "sqlAdministratorLogin": "asa.sql.admin",
-    "workspaceName": "[concat('asaworkspace', parameters('uniqueSuffix'))]",
-    "adlsStorageAccountName": "[concat('asadatalake', parameters('uniqueSuffix'))]",
-    "defaultDataLakeStorageFilesystemName": "tempdata",
-    "sqlComputeName": "SQLPool01",
-    "sparkComputeName": "SparkPool01",
-    "computeSubnetId": "",
-    "sqlServerSKU": "DW500c",
-    "storageBlobDataContributorRoleID": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
-    "storageBlobDataOwnerRoleID": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
-    "defaultDataLakeStorageAccountUrl": "[concat('https://', variables('adlsStorageAccountName'), '.dfs.core.windows.net')]",
-    "sparkAutoScaleEnabled": "true",
-    "sparkMinNodeCount": "3",
-    "sparkMaxNodeCount": "4",
-    "sparkNodeCount": "0",
-    "sparkNodeSizeFamily": "MemoryOptimized",
-    "sparkNodeSize": "Small",
-    "sparkAutoPauseEnabled": "true",
-    "sparkAutoPauseDelayInMinutes": "15",
-    "sparkVersion": "2.4",
-    "packagesRequirementsFileName": "requirements.txt",
-    "packagesRequirementsContent": "xgboost==1.0.2\nonnxruntime==1.0.0\nwerkzeug==0.16.1\nnimbusml==1.7.1\nruamel.yaml==0.16.9\nazureml-train-automl-runtime==1.6.0\nscikit-learn==0.20.3\nnumpy==1.16.2\npandas==0.23.4\nscipy==1.4.1\n",
-    "keyVaultName": "[concat('asakeyvault', parameters('uniqueSuffix'))]",
-    "blobStorageAccountName": "[concat('asastore', parameters('uniqueSuffix'))]",
-    "applicationInsightsName": "[concat('asaappinsights', parameters('uniqueSuffix'))]",
-    "amlWorkspaceName": "[concat('amlworkspace', parameters('uniqueSuffix'))]",
-    "cosmosDbAccountName": "[concat('asacosmosdb', parameters('uniqueSuffix'))]"
+    "resourceName" : "[variables('resourceName')]"
   },
   "resources": [
     {
@@ -56,479 +24,554 @@
               "DeploymentId": "[parameters('uniqueSuffix')]"
           }
       }
-  },
-    {
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-04-01",
-      "name": "[variables('blobStorageAccountName')]",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "Standard_LRS"
-      },
-      "kind": "StorageV2",
-      "properties": {
-        "encryption": {
-          "services": {
-            "blob": {
-              "enabled": true
-            },
-            "file": {
-              "enabled": true
-            }
+    },
+      {
+          "type": "Microsoft.Devices/IotHubs",
+          "apiVersion": "2020-03-01",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "sku": {
+              "name": "S1",
+              "tier": "Standard",
+              "capacity": 1
           },
-          "keySource": "Microsoft.Storage"
-        },
-        "supportsHttpsTrafficOnly": true
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(variables('blobStorageAccountName'), '/default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('blobStorageAccountName'))]"
-      ],
-      "sku": {
-        "name": "Standard_LRS",
-        "tier": "Standard"
+          "properties": {
+              "ipFilterRules": [],
+              "eventHubEndpoints": {
+                  "events": {
+                      "retentionTimeInDays": 1,
+                      "partitionCount": 4
+                  }
+              },
+              "routing": {
+                  "endpoints": {
+                      "serviceBusQueues": [],
+                      "serviceBusTopics": [],
+                      "eventHubs": [],
+                      "storageContainers": []
+                  },
+                  "routes": [],
+                  "fallbackRoute": {
+                      "name": "$fallback",
+                      "source": "DeviceMessages",
+                      "condition": "true",
+                      "endpointNames": [
+                          "events"
+                      ],
+                      "isEnabled": true
+                  }
+              },
+              "storageEndpoints": {
+                  "$default": {
+                      "sasTtlAsIso8601": "PT1H",
+                      "connectionString": null,
+                      "containerName": null
+                  }
+              },
+              "messagingEndpoints": {
+                  "fileNotifications": {
+                      "lockDurationAsIso8601": "PT1M",
+                      "ttlAsIso8601": "PT1H",
+                      "maxDeliveryCount": 10
+                  }
+              },
+              "enableFileUploadNotifications": false,
+              "cloudToDevice": {
+                  "maxDeliveryCount": 10,
+                  "defaultTtlAsIso8601": "PT1H",
+                  "feedback": {
+                      "lockDurationAsIso8601": "PT1M",
+                      "ttlAsIso8601": "PT1H",
+                      "maxDeliveryCount": 10
+                  }
+              },
+              "features": "None"
+          }
       },
-      "properties": {
-        "cors": {
-          "corsRules": []
-        },
-        "deleteRetentionPolicy": {
-          "enabled": false
-        }
-      }
-    },
-    {
-      "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2018-02-14",
-      "name": "[variables('keyVaultName')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "tenantId": "[subscription().tenantId]",
-        "sku": {
-          "name": "standard",
-          "family": "A"
-        },
-        "accessPolicies": []
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-06-01",
-      "name": "[variables('adlsStorageAccountName')]",
-      "location": "[variables('location')]",
-      "dependsOn": [],
-      "tags": {},
-      "sku": {
-        "name": "Standard_LRS"
+      {
+          "type": "microsoft.insights/components",
+          "apiVersion": "2018-05-01-preview",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "kind": "web",
+          "properties": {
+              "Application_Type": "web",
+              "Request_Source": "IbizaWebAppExtensionCreate",
+              "RetentionInDays": 90,
+              "publicNetworkAccessForIngestion": "Enabled",
+              "publicNetworkAccessForQuery": "Enabled"
+          }
       },
-      "kind": "StorageV2",
-      "properties": {
-        "accessTier": "Hot",
-        "supportsHttpsTrafficOnly": "true",
-        "isHnsEnabled": "true",
-        "largeFileSharesState": "Disabled"
+      {
+          "type": "Microsoft.KeyVault/vaults",
+          "apiVersion": "2016-10-01",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "properties": {
+              "sku": {
+                  "family": "A",
+                  "name": "Standard"
+              },
+              "tenantId": "d280491c-b27a-41bf-9623-21b60cf430b3",
+              "accessPolicies": [
+                  {
+                      "tenantId": "d280491c-b27a-41bf-9623-21b60cf430b3",
+                      "objectId": "c1c8abcf-aa1f-443b-aa47-93df8879d9b2",
+                      "permissions": {
+                          "keys": [
+                              "Get",
+                              "List",
+                              "Update",
+                              "Create",
+                              "Import",
+                              "Delete",
+                              "Recover",
+                              "Backup",
+                              "Restore"
+                          ],
+                          "secrets": [
+                              "Get",
+                              "List",
+                              "Set",
+                              "Delete",
+                              "Recover",
+                              "Backup",
+                              "Restore"
+                          ],
+                          "certificates": [
+                              "Get",
+                              "List",
+                              "Update",
+                              "Create",
+                              "Import",
+                              "Delete",
+                              "Recover",
+                              "Backup",
+                              "Restore",
+                              "ManageContacts",
+                              "ManageIssuers",
+                              "GetIssuers",
+                              "ListIssuers",
+                              "SetIssuers",
+                              "DeleteIssuers"
+                          ]
+                      }
+                  }
+              ],
+              "enabledForDeployment": false,
+              "enabledForDiskEncryption": false,
+              "enabledForTemplateDeployment": false,
+              "enableSoftDelete": true
+          }
       },
-      "resources": [
-        {
-          "type": "blobServices/containers",
-          "apiVersion": "2018-07-01",
-          "name": "[concat('default/', variables('defaultDataLakeStorageFilesystemName'))]",
+      {
+          "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
+          "apiVersion": "2020-05-01",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "properties": {
+              "customRules": [],
+              "policySettings": {
+                  "requestBodyCheck": true,
+                  "maxRequestBodySizeInKb": 128,
+                  "fileUploadLimitInMb": 100,
+                  "state": "Enabled",
+                  "mode": "Detection"
+              },
+              "managedRules": {
+                  "managedRuleSets": [
+                      {
+                          "ruleSetType": "OWASP",
+                          "ruleSetVersion": "3.0",
+                          "ruleGroupOverrides": []
+                      }
+                  ],
+                  "exclusions": []
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/publicIPAddresses",
+          "apiVersion": "2020-05-01",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "sku": {
+              "name": "Standard"
+          },
+          "properties": {
+              "ipAddress": "52.142.16.152",
+              "publicIPAddressVersion": "IPv4",
+              "publicIPAllocationMethod": "Static",
+              "idleTimeoutInMinutes": 4,
+              "ipTags": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks",
+          "apiVersion": "2020-05-01",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "properties": {
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "10.5.0.0/16"
+                  ]
+              },
+              "subnets": [
+                  {
+                      "name": "default",
+                      "properties": {
+                          "addressPrefix": "10.5.0.0/24",
+                          "delegations": [],
+                          "privateEndpointNetworkPolicies": "Enabled",
+                          "privateLinkServiceNetworkPolicies": "Enabled"
+                      }
+                  }
+              ],
+              "virtualNetworkPeerings": [],
+              "enableDdosProtection": false,
+              "enableVmProtection": false
+          }
+      },
+      {
+          "type": "microsoft.operationalinsights/workspaces",
+          "apiVersion": "2020-03-01-preview",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "properties": {
+              "provisioningState": "Succeeded",
+              "sku": {
+                  "name": "pergb2018"
+              },
+              "retentionInDays": 30,
+              "workspaceCapping": {
+                  "dailyQuotaGb": -1
+              },
+              "publicNetworkAccessForIngestion": "Enabled",
+              "publicNetworkAccessForQuery": "Enabled"
+          }
+      },
+      {
+          "type": "Microsoft.Web/serverfarms",
+          "apiVersion": "2018-02-01",
+          "name": "[variables('resourceName')]",
+          "location": "East US",
+          "sku": {
+              "name": "P1v2",
+              "tier": "PremiumV2",
+              "size": "P1v2",
+              "family": "Pv2",
+              "capacity": 1
+          },
+          "kind": "app",
+          "properties": {
+              "perSiteScaling": false,
+              "maximumElasticWorkerCount": 1,
+              "isSpot": false,
+              "reserved": false,
+              "isXenon": false,
+              "hyperV": false,
+              "targetWorkerCount": 0,
+              "targetWorkerSizeId": 0
+          }
+      },
+      {
+          "type": "microsoft.alertsmanagement/smartdetectoralertrules",
+          "apiVersion": "2019-06-01",
+          "name": "[concat('failure anomalies wssecurity', parameters('uniqueSuffix'))]",
+          "location": "global",
           "dependsOn": [
-            "[concat('Microsoft.Storage/storageAccounts/', variables('adlsStorageAccountName'))]"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(variables('adlsStorageAccountName'), '/default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('adlsStorageAccountName'))]"
-      ],
-      "sku": {
-        "name": "Standard_LRS",
-        "tier": "Standard"
-      },
-      "properties": {
-        "cors": {
-          "corsRules": []
-        },
-        "deleteRetentionPolicy": {
-          "enabled": false
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/fileServices",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(variables('adlsStorageAccountName'), '/default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('adlsStorageAccountName'))]"
-      ],
-      "sku": {
-        "name": "Standard_LRS",
-        "tier": "Standard"
-      },
-      "properties": {
-        "cors": {
-          "corsRules": []
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Synapse/workspaces",
-      "apiVersion": "2019-06-01-preview",
-      "name": "[variables('workspaceName')]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', variables('adlsStorageAccountName'), '/blobServices/default/containers/', variables('defaultDataLakeStorageFilesystemName'))]"
-      ],
-      "identity": {
-        "type": "SystemAssigned"
-      },
-      "properties": {
-        "defaultDataLakeStorage": {
-          "accountUrl": "[variables('defaultDataLakeStorageAccountUrl')]",
-          "filesystem": "[variables('defaultDataLakeStorageFilesystemName')]"
-        },
-        "virtualNetworkProfile": {
-          "computeSubnetId": "[variables('computeSubnetId')]"
-        },
-        "sqlAdministratorLogin": "[variables('sqlAdministratorLogin')]",
-        "sqlAdministratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]"
-      },
-      "resources": [
-        {
-          "type": "firewallrules",
-          "apiVersion": "2019-06-01-preview",
-          "name": "allowAll",
-          "location": "[variables('location')]",
-          "dependsOn": [
-            "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'))]"
+              "[resourceId('microsoft.insights/components', concat('wssecurity', parameters('uniqueSuffix')))]"
           ],
           "properties": {
-            "startIpAddress": "0.0.0.0",
-            "endIpAddress": "255.255.255.255"
-          }
-        }
-      ]
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices/containers/providers/roleAssignments",
-      "apiVersion": "2018-09-01-preview",
-      "name": "[concat(variables('adlsStorageAccountName'), '/default/', variables('defaultDataLakeStorageFilesystemName'), '/Microsoft.Authorization/',  guid(concat(resourceGroup().id, '/', variables('storageBlobDataOwnerRoleID'), '/', variables('workspaceName'))))]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'))]"
-      ],
-      "properties": {
-        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataOwnerRoleID'))]",
-        "principalId": "[reference(concat('Microsoft.Synapse/workspaces/', variables('workspaceName')), '2019-06-01-preview', 'Full').identity.principalId]",
-        "principalType": "ServicePrincipal"
-      }
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2018-09-01-preview",
-      "name": "[guid(concat(resourceGroup().id, '/', variables('storageBlobDataOwnerRoleID'), '/', variables('workspaceName'), '2'))]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'))]"
-      ],
-      "properties": {
-        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataOwnerRoleID'))]",
-        "principalId": "[reference(concat('Microsoft.Synapse/workspaces/', variables('workspaceName')), '2019-06-01-preview', 'Full').identity.principalId]",
-        "principalType": "ServicePrincipal"
-      }
-    },
-    {
-      "type": "Microsoft.Synapse/workspaces/bigDataPools",
-      "apiVersion": "2019-06-01-preview",
-      "name": "[concat(variables('workspaceName'), '/', variables('sparkComputeName'))]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'))]"
-      ],
-      "properties": {
-        "nodeCount": "[variables('sparkNodeCount')]",
-        "nodeSizeFamily": "[variables('sparkNodeSizeFamily')]",
-        "nodeSize": "[variables('sparkNodeSize')]",
-        "autoScale": {
-          "enabled": "[variables('sparkAutoScaleEnabled')]",
-          "minNodeCount": "[variables('sparkMinNodeCount')]",
-          "maxNodeCount": "[variables('sparkMaxNodeCount')]"
-        },
-        "autoPause": {
-          "enabled": "[variables('sparkAutoPauseEnabled')]",
-          "delayInMinutes": "[variables('sparkAutoPauseDelayInMinutes')]"
-        },
-        "sparkVersion": "[variables('sparkVersion')]",
-        "libraryRequirements": {
-          "filename": "[variables('packagesRequirementsFileName')]",
-          "content": "[variables('packagesRequirementsContent')]"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Synapse/workspaces/sqlPools",
-      "apiVersion": "2019-06-01-preview",
-      "name": "[concat(variables('workspaceName'), '/', variables('sqlComputeName'))]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'))]",
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'), '/bigDataPools/', variables('sparkComputeName'))]"
-      ],
-      "sku": {
-        "name": "[variables('sqlServerSKU')]"
-      },
-      "properties": {
-        "createMode": "Default",
-        "collation": "SQL_Latin1_General_CP1_CI_AS"
-      }
-    },
-    {
-      "type": "Microsoft.Insights/components",
-      "apiVersion": "2018-05-01-preview",
-      "name": "[variables('applicationInsightsName')]",
-      "location": "[if(or(equals(variables('location'),'eastus2'),equals(variables('location'),'westcentralus')),'southcentralus',variables('location'))]",
-      "kind": "web",
-      "properties": {
-        "Application_Type": "web"
-      }
-    },
-    {
-      "type": "Microsoft.MachineLearningServices/workspaces",
-      "apiVersion": "2019-11-01",
-      "name": "[variables('amlWorkspaceName')]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('blobStorageAccountName'))]",
-        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
-      ],
-      "sku": {
-        "tier": "Enterprise",
-        "name": "Enterprise"
-      },
-      "identity": {
-        "type": "systemAssigned"
-      },
-      "properties": {
-        "friendlyName": "[variables('amlWorkspaceName')]",
-        "keyVault": "[resourceId('Microsoft.KeyVault/vaults',variables('keyVaultName'))]",
-        "applicationInsights": "[resourceId('Microsoft.Insights/components',variables('applicationInsightsName'))]",
-        "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts/',variables('blobStorageAccountName'))]"
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(variables('adlsStorageAccountName'), '/default/staging')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('adlsStorageAccountName'), 'default')]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('adlsStorageAccountName'))]"
-      ],
-      "properties": {
-        "publicAccess": "None"
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(variables('adlsStorageAccountName'), '/default/wwi-02')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('adlsStorageAccountName'), 'default')]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('adlsStorageAccountName'))]"
-      ],
-      "properties": {
-        "publicAccess": "None"
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(variables('blobStorageAccountName'), '/default/staging')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('blobStorageAccountName'), 'default')]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('blobStorageAccountName'))]"
-      ],
-      "properties": {
-        "publicAccess": "None"
-      }
-    },
-    {
-      "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2020-03-01",
-      "name": "[variables('cosmosDbAccountName')]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'), '/sqlPools/', variables('sqlComputeName'))]",
-        "[concat('Microsoft.Synapse/workspaces/', variables('workspaceName'))]",
-        "[concat('Microsoft.Storage/storageAccounts/', variables('adlsStorageAccountName'), '/blobServices/default/containers/', variables('defaultDataLakeStorageFilesystemName'))]"
-      ],
-      "tags": {
-        "defaultExperience": "Core (SQL)",
-        "hidden-cosmos-mmspecial": "",
-        "CosmosAccountType": "Non-Production"
-      },
-      "kind": "GlobalDocumentDB",
-      "properties": {
-        "publicNetworkAccess": "Enabled",
-        "enableAutomaticFailover": false,
-        "enableMultipleWriteLocations": false,
-        "isVirtualNetworkFilterEnabled": false,
-        "virtualNetworkRules": [],
-        "disableKeyBasedMetadataWriteAccess": false,
-        "databaseAccountOfferType": "Standard",
-        "consistencyPolicy": {
-          "defaultConsistencyLevel": "Session",
-          "maxIntervalInSeconds": 5,
-          "maxStalenessPrefix": 100
-        },
-        "locations": [
-          {
-            "locationName": "[variables('location')]",
-            "provisioningState": "Succeeded",
-            "failoverPriority": 0,
-            "isZoneRedundant": false
-          }
-        ],
-        "capabilities": []
-      }
-    },
-    {
-      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
-      "apiVersion": "2020-03-01",
-      "name": "[concat(variables('cosmosDbAccountName'), '/CustomerProfile')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
-      ],
-      "properties": {
-        "resource": {
-          "id": "CustomerProfile"
-        },
-        "options": {}
-      }
-    },
-    {
-      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
-      "apiVersion": "2020-03-01",
-      "name": "[concat(variables('cosmosDbAccountName'), '/CustomerProfile/OnlineUserProfile01')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'CustomerProfile')]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
-      ],
-      "properties": {
-        "resource": {
-          "id": "OnlineUserProfile01",
-          "indexingPolicy": {
-            "indexingMode": "consistent",
-            "automatic": true,
-            "includedPaths": [
-              {
-                "path": "/*"
+              "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
+              "state": "Enabled",
+              "severity": "Sev3",
+              "frequency": "PT1M",
+              "detector": {
+                  "id": "FailureAnomaliesDetector",
+                  "name": "Failure Anomalies",
+                  "description": "Detects if your application experiences an abnormal rise in the rate of HTTP requests or dependency calls that are reported as failed. The anomaly detection uses machine learning algorithms and occurs in near real time, therefore there's no need to define a frequency for this signal.<br/></br/>To help you triage and diagnose the problem, an analysis of the characteristics of the failures and related telemetry is provided with the detection. This feature works for any app, hosted in the cloud or on your own servers, that generates request or dependency telemetry - for example, if you have a worker role that calls <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackrequest\\\" target=\\\"_blank\\\">TrackRequest()</a> or <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackdependency\\\" target=\\\"_blank\\\">TrackDependency()</a>.<br/><br/><a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/azure-monitor/app/proactive-failure-diagnostics\\\" target=\\\"_blank\\\">Learn more about Failure Anomalies</a>",
+                  "supportedResourceTypes": [
+                      "ApplicationInsights"
+                  ]
+              },
+              "scope": [
+                  "[resourceId('microsoft.insights/components', concat('wssecurity', parameters('uniqueSuffix')))]"
+              ],
+              "actionGroups": {
+                  "groupIds": [
+                      "/subscriptions/e433f371-e5e9-4238-abc2-7c38aa596a18/resourcegroups/privacycentral/providers/microsoft.insights/actiongroups/application insights smart detection"
+                  ]
               }
-            ],
-            "excludedPaths": [
-              {
-                "path": "/\"_etag\"/?"
-              }
-            ]
-          },
-          "partitionKey": {
-            "paths": [
-              "/userId"
-            ],
-            "kind": "Hash"
-          },
-          "uniqueKeyPolicy": {
-            "uniqueKeys": []
-          },
-          "conflictResolutionPolicy": {
-            "mode": "LastWriterWins",
-            "conflictResolutionPath": "/_ts"
           }
-        },
-        "options": {}
-      }
-    },
-    {
-      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
-      "apiVersion": "2020-03-01",
-      "name": "[concat(variables('cosmosDbAccountName'), '/CustomerProfile/Pipeline')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'CustomerProfile')]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
-      ],
-      "properties": {
-        "resource": {
-          "id": "Pipeline",
-          "indexingPolicy": {
-            "indexingMode": "consistent",
-            "automatic": true,
-            "includedPaths": [
-              {
-                "path": "/*"
-              }
-            ],
-            "excludedPaths": [
-              {
-                "path": "/\"_etag\"/?"
-              }
-            ]
-          },
-          "partitionKey": {
-            "paths": [
-              "/id"
-            ],
-            "kind": "Hash"
-          },
-          "uniqueKeyPolicy": {
-            "uniqueKeys": []
-          },
-          "conflictResolutionPolicy": {
-            "mode": "LastWriterWins",
-            "conflictResolutionPath": "/_ts"
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks/subnets",
+          "apiVersion": "2020-05-01",
+          "name": "[concat('wssecurity', parameters('uniqueSuffix'), '/default')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', concat('wssecurity', parameters('uniqueSuffix')))]"
+          ],
+          "properties": {
+              "addressPrefix": "10.5.0.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
           }
-        },
-        "options": {}
+      },
+      {
+          "type": "Microsoft.Web/sites",
+          "apiVersion": "2018-11-01",
+          "name": "[variables('resourceName')]",
+          "location": "East US",
+          "dependsOn": [
+              "[resourceId('Microsoft.Web/serverfarms', concat('wssecurity', parameters('uniqueSuffix')))]"
+          ],
+          "kind": "app",
+          "properties": {
+              "enabled": true,
+              "hostNameSslStates": [
+                  {
+                      "name": "wssecuritysuffix.azurewebsites.net",
+                      "sslState": "Disabled",
+                      "hostType": "Standard"
+                  },
+                  {
+                      "name": "wssecuritysuffix.scm.azurewebsites.net",
+                      "sslState": "Disabled",
+                      "hostType": "Repository"
+                  }
+              ],
+              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'wssecuritySUFFIX')]",
+              "reserved": false,
+              "isXenon": false,
+              "hyperV": false,
+              "siteConfig": {},
+              "scmSiteAlsoStopped": false,
+              "clientAffinityEnabled": true,
+              "clientCertEnabled": false,
+              "hostNamesDisabled": false,
+              "containerSize": 0,
+              "dailyMemoryTimeQuota": 0,
+              "httpsOnly": false,
+              "redundancyMode": "None"
+          }
+      },
+      {
+          "type": "Microsoft.Web/sites/config",
+          "apiVersion": "2018-11-01",
+          "name": "wssecuritySUFFIX/web",
+          "location": "East US",
+          "dependsOn": [
+              "[resourceId('Microsoft.Web/sites', 'wssecuritySUFFIX')]"
+          ],
+          "properties": {
+              "numberOfWorkers": 1,
+              "defaultDocuments": [
+                  "Default.htm",
+                  "Default.html",
+                  "Default.asp",
+                  "index.htm",
+                  "index.html",
+                  "iisstart.htm",
+                  "default.aspx",
+                  "index.php",
+                  "hostingstart.html"
+              ],
+              "netFrameworkVersion": "v4.0",
+              "requestTracingEnabled": false,
+              "remoteDebuggingEnabled": false,
+              "httpLoggingEnabled": false,
+              "logsDirectorySizeLimit": 35,
+              "detailedErrorLoggingEnabled": false,
+              "publishingUsername": "$wssecuritySUFFIX",
+              "scmType": "None",
+              "use32BitWorkerProcess": true,
+              "webSocketsEnabled": false,
+              "alwaysOn": true,
+              "managedPipelineMode": "Integrated",
+              "virtualApplications": [
+                  {
+                      "virtualPath": "/",
+                      "physicalPath": "site\\wwwroot",
+                      "preloadEnabled": true
+                  }
+              ],
+              "loadBalancing": "LeastRequests",
+              "experiments": {
+                  "rampUpRules": []
+              },
+              "autoHealEnabled": false,
+              "localMySqlEnabled": false,
+              "ipSecurityRestrictions": [
+                  {
+                      "ipAddress": "Any",
+                      "action": "Allow",
+                      "priority": 1,
+                      "name": "Allow all",
+                      "description": "Allow all access"
+                  }
+              ],
+              "scmIpSecurityRestrictions": [
+                  {
+                      "ipAddress": "Any",
+                      "action": "Allow",
+                      "priority": 1,
+                      "name": "Allow all",
+                      "description": "Allow all access"
+                  }
+              ],
+              "scmIpSecurityRestrictionsUseMain": false,
+              "http20Enabled": false,
+              "minTlsVersion": "1.2",
+              "ftpsState": "AllAllowed",
+              "reservedInstanceCount": 0
+          }
+      },
+      {
+          "type": "Microsoft.Web/sites/hostNameBindings",
+          "apiVersion": "2018-11-01",
+          "name": "wssecuritySUFFIX/wssecuritysuffix.azurewebsites.net",
+          "location": "East US",
+          "dependsOn": [
+              "[resourceId('Microsoft.Web/sites', 'wssecuritySUFFIX')]"
+          ],
+          "properties": {
+              "siteName": "[variables('resourceName')]",
+              "hostNameType": "Verified"
+          }
+      },
+      {
+          "type": "Microsoft.Network/applicationGateways",
+          "apiVersion": "2020-05-01",
+          "name": "[variables('resourceName')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'wssecuritySUFFIX', 'default')]",
+              "[resourceId('Microsoft.Network/publicIPAddresses', 'wssecuritySUFFIX')]"
+          ],
+          "properties": {
+              "sku": {
+                  "name": "WAF_v2",
+                  "tier": "WAF_v2",
+                  "capacity": 2
+              },
+              "gatewayIPConfigurations": [
+                  {
+                      "name": "appGatewayIpConfig",
+                      "properties": {
+                          "subnet": {
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'wssecuritySUFFIX', 'default')]"
+                          }
+                      }
+                  }
+              ],
+              "sslCertificates": [],
+              "trustedRootCertificates": [],
+              "frontendIPConfigurations": [
+                  {
+                      "name": "appGwPublicFrontendIp",
+                      "properties": {
+                          "privateIPAllocationMethod": "Dynamic",
+                          "publicIPAddress": {
+                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'wssecuritySUFFIX')]"
+                          }
+                      }
+                  },
+                  {
+                      "name": "appGwPrivateFrontendIp",
+                      "properties": {
+                          "privateIPAddress": "10.5.0.6",
+                          "privateIPAllocationMethod": "Static",
+                          "subnet": {
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'wssecuritySUFFIX', 'default')]"
+                          }
+                      }
+                  }
+              ],
+              "frontendPorts": [
+                  {
+                      "name": "port_80",
+                      "properties": {
+                          "port": 80
+                      }
+                  }
+              ],
+              "backendAddressPools": [
+                  {
+                      "name": "wssecuritybepSUFFIX",
+                      "properties": {
+                          "backendAddresses": [
+                              {
+                                  "ipAddress": "10.0.0.5"
+                              }
+                          ]
+                      }
+                  }
+              ],
+              "backendHttpSettingsCollection": [
+                  {
+                      "name": "wssecurityhttpsetting",
+                      "properties": {
+                          "port": 80,
+                          "protocol": "Http",
+                          "cookieBasedAffinity": "Disabled",
+                          "pickHostNameFromBackendAddress": false,
+                          "requestTimeout": 20
+                      }
+                  }
+              ],
+              "httpListeners": [
+                  {
+                      "name": "wssecuritylistenerSUFFIX",
+                      "properties": {
+                          "frontendIPConfiguration": {
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                          },
+                          "frontendPort": {
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/frontendPorts/port_80')]"
+                          },
+                          "protocol": "Http",
+                          "hostNames": [],
+                          "requireServerNameIndication": false
+                      }
+                  }
+              ],
+              "urlPathMaps": [],
+              "requestRoutingRules": [
+                  {
+                      "name": "[variables('resourceName')]",
+                      "properties": {
+                          "ruleType": "Basic",
+                          "httpListener": {
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/httpListeners/wssecuritylistenerSUFFIX')]"
+                          },
+                          "backendAddressPool": {
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/backendAddressPools/wssecuritybepSUFFIX')]"
+                          },
+                          "backendHttpSettings": {
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/backendHttpSettingsCollection/wssecurityhttpsetting')]"
+                          }
+                      }
+                  }
+              ],
+              "probes": [],
+              "rewriteRuleSets": [],
+              "redirectConfigurations": [],
+              "privateLinkConfigurations": [],
+              "webApplicationFirewallConfiguration": {
+                  "enabled": true,
+                  "firewallMode": "Detection",
+                  "ruleSetType": "OWASP",
+                  "ruleSetVersion": "3.0",
+                  "disabledRuleGroups": [],
+                  "requestBodyCheck": true,
+                  "maxRequestBodySizeInKb": 128,
+                  "fileUploadLimitInMb": 100
+              },
+              "enableHttp2": false
+          }
       }
-    },
-    {
-      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings",
-      "apiVersion": "2020-03-01",
-      "name": "[concat(variables('cosmosDbAccountName'), '/CustomerProfile/OnlineUserProfile01/default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers', variables('cosmosDbAccountName'), 'CustomerProfile', 'OnlineUserProfile01')]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'CustomerProfile')]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
-      ],
-      "properties": {
-        "resource": {
-          "throughput": 10000
-        }
-      }
-    },
-    {
-      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings",
-      "apiVersion": "2020-03-01",
-      "name": "[concat(variables('cosmosDbAccountName'), '/CustomerProfile/Pipeline/default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers', variables('cosmosDbAccountName'), 'CustomerProfile', 'Pipeline')]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'CustomerProfile')]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
-      ],
-      "properties": {
-        "resource": {
-          "throughput": 400
-        }
-      }
-    }
-  ],
-  "outputs": {}
+  ]
 }
