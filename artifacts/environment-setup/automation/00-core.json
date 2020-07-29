@@ -209,19 +209,19 @@
       {
           "type": "Microsoft.Network/virtualNetworks",
           "apiVersion": "2020-05-01",
-          "name": "[variables('resourceName')]",
+          "name": "[variables('resourceName')-hub]",
           "location": "eastus",
           "properties": {
               "addressSpace": {
                   "addressPrefixes": [
-                      "10.5.0.0/16"
+                      "10.0.0.0/16"
                   ]
               },
               "subnets": [
                   {
                       "name": "default",
                       "properties": {
-                          "addressPrefix": "10.5.0.0/24",
+                          "addressPrefix": "10.0.0.0/24",
                           "delegations": [],
                           "privateEndpointNetworkPolicies": "Enabled",
                           "privateLinkServiceNetworkPolicies": "Enabled"
@@ -233,6 +233,33 @@
               "enableVmProtection": false
           }
       },
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('resourceName')-web]",
+        "location": "eastus",
+        "properties": {
+            "addressSpace": {
+                "addressPrefixes": [
+                    "10.1.0.0/16"
+                ]
+            },
+            "subnets": [
+                {
+                    "name": "default",
+                    "properties": {
+                        "addressPrefix": "10.1.0.0/24",
+                        "delegations": [],
+                        "privateEndpointNetworkPolicies": "Enabled",
+                        "privateLinkServiceNetworkPolicies": "Enabled"
+                    }
+                }
+            ],
+            "virtualNetworkPeerings": [],
+            "enableDdosProtection": false,
+            "enableVmProtection": false
+        }
+    },
       {
           "type": "microsoft.operationalinsights/workspaces",
           "apiVersion": "2020-03-01-preview",
@@ -310,15 +337,29 @@
           "apiVersion": "2020-05-01",
           "name": "[concat(variables('resourceName'), '/default')]",
           "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]"
+              "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('resourceName'), '-hub'))]"
           ],
           "properties": {
-              "addressPrefix": "10.5.0.0/24",
+              "addressPrefix": "10.0.0.0/24",
               "delegations": [],
               "privateEndpointNetworkPolicies": "Enabled",
               "privateLinkServiceNetworkPolicies": "Enabled"
           }
       },
+      {
+        "type": "Microsoft.Network/virtualNetworks/subnets",
+        "apiVersion": "2020-05-01",
+        "name": "[concat(variables('resourceName'), '/default')]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('resourceName'), '-web'))]"
+        ],
+        "properties": {
+            "addressPrefix": "10.1.0.0/24",
+            "delegations": [],
+            "privateEndpointNetworkPolicies": "Enabled",
+            "privateLinkServiceNetworkPolicies": "Enabled"
+        }
+    },
       {
           "type": "Microsoft.Web/sites",
           "apiVersion": "2018-11-01",
@@ -447,7 +488,7 @@
           "name": "[variables('resourceName')]",
           "location": "eastus",
           "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), 'default')]",
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), '-hub', 'default')]",
               "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
           ],
           "properties": {
@@ -461,7 +502,7 @@
                       "name": "appGatewayIpConfig",
                       "properties": {
                           "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), 'default')]"
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'),'-hub'), 'default')]"
                           }
                       }
                   }
@@ -484,7 +525,7 @@
                           "privateIPAddress": "10.5.0.6",
                           "privateIPAllocationMethod": "Static",
                           "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), 'default')]"
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'),'-hub'), 'default')]"
                           }
                       }
                   }
