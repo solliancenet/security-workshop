@@ -11,7 +11,7 @@
   },
   "variables": {
     "location": "[resourceGroup().location]",
-    "resourceName" : "[variables('resourceName')]"
+    "resourceName" : "[concat('wssecurity',parameters('uniqueSuffix'))]"
   },
   "resources": [
     {
@@ -239,7 +239,6 @@
           "name": "[variables('resourceName')]",
           "location": "eastus",
           "properties": {
-              "provisioningState": "Succeeded",
               "sku": {
                   "name": "pergb2018"
               },
@@ -278,10 +277,10 @@
       {
           "type": "microsoft.alertsmanagement/smartdetectoralertrules",
           "apiVersion": "2019-06-01",
-          "name": "[concat('failure anomalies wssecurity', parameters('uniqueSuffix'))]",
+          "name": "[concat('failure anomalies ', variables('resourceName'))]",
           "location": "global",
           "dependsOn": [
-              "[resourceId('microsoft.insights/components', concat('wssecurity', parameters('uniqueSuffix')))]"
+              "[resourceId('microsoft.insights/components', variables('resourceName'))]"
           ],
           "properties": {
               "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
@@ -297,7 +296,7 @@
                   ]
               },
               "scope": [
-                  "[resourceId('microsoft.insights/components', concat('wssecurity', parameters('uniqueSuffix')))]"
+                  "[resourceId('microsoft.insights/components', variables('resourceName'))]"
               ],
               "actionGroups": {
                   "groupIds": [
@@ -309,9 +308,9 @@
       {
           "type": "Microsoft.Network/virtualNetworks/subnets",
           "apiVersion": "2020-05-01",
-          "name": "[concat('wssecurity', parameters('uniqueSuffix'), '/default')]",
+          "name": "[concat(variables('resourceName'), '/default')]",
           "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks', concat('wssecurity', parameters('uniqueSuffix')))]"
+              "[resourceId('Microsoft.Network/virtualNetworks', variables('resourceName'))]"
           ],
           "properties": {
               "addressPrefix": "10.5.0.0/24",
@@ -326,24 +325,24 @@
           "name": "[variables('resourceName')]",
           "location": "East US",
           "dependsOn": [
-              "[resourceId('Microsoft.Web/serverfarms', concat('wssecurity', parameters('uniqueSuffix')))]"
+              "[resourceId('Microsoft.Web/serverfarms', variables('resourceName'))]"
           ],
           "kind": "app",
           "properties": {
               "enabled": true,
               "hostNameSslStates": [
                   {
-                      "name": "wssecuritysuffix.azurewebsites.net",
+                      "name": "[concat(variables('resourceName'), '.azurewebsites.net')]",
                       "sslState": "Disabled",
                       "hostType": "Standard"
                   },
                   {
-                      "name": "wssecuritysuffix.scm.azurewebsites.net",
+                      "name": "[concat(variables('resourceName'), '.scm.azurewebsites.net')]",
                       "sslState": "Disabled",
                       "hostType": "Repository"
                   }
               ],
-              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'wssecuritySUFFIX')]",
+              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('resourceName'))]",
               "reserved": false,
               "isXenon": false,
               "hyperV": false,
@@ -361,10 +360,10 @@
       {
           "type": "Microsoft.Web/sites/config",
           "apiVersion": "2018-11-01",
-          "name": "wssecuritySUFFIX/web",
+          "name": "[concat(variables('resourceName'),'/web')]",
           "location": "East US",
           "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', 'wssecuritySUFFIX')]"
+              "[resourceId('Microsoft.Web/sites', variables('resourceName'))]"
           ],
           "properties": {
               "numberOfWorkers": 1,
@@ -385,7 +384,7 @@
               "httpLoggingEnabled": false,
               "logsDirectorySizeLimit": 35,
               "detailedErrorLoggingEnabled": false,
-              "publishingUsername": "$wssecuritySUFFIX",
+              "publishingUsername": "[concat('$', variables('resourceName'))]",
               "scmType": "None",
               "use32BitWorkerProcess": true,
               "webSocketsEnabled": false,
@@ -432,10 +431,10 @@
       {
           "type": "Microsoft.Web/sites/hostNameBindings",
           "apiVersion": "2018-11-01",
-          "name": "wssecuritySUFFIX/wssecuritysuffix.azurewebsites.net",
+          "name": "[concat(variables('resourceName'), '/', variables('resourceName'), '.azurewebsites.net')]",
           "location": "East US",
           "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', 'wssecuritySUFFIX')]"
+              "[resourceId('Microsoft.Web/sites', variables('resourceName'))]"
           ],
           "properties": {
               "siteName": "[variables('resourceName')]",
@@ -448,8 +447,8 @@
           "name": "[variables('resourceName')]",
           "location": "eastus",
           "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'wssecuritySUFFIX', 'default')]",
-              "[resourceId('Microsoft.Network/publicIPAddresses', 'wssecuritySUFFIX')]"
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), 'default')]",
+              "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
           ],
           "properties": {
               "sku": {
@@ -462,7 +461,7 @@
                       "name": "appGatewayIpConfig",
                       "properties": {
                           "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'wssecuritySUFFIX', 'default')]"
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), 'default')]"
                           }
                       }
                   }
@@ -475,7 +474,7 @@
                       "properties": {
                           "privateIPAllocationMethod": "Dynamic",
                           "publicIPAddress": {
-                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'wssecuritySUFFIX')]"
+                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
                           }
                       }
                   },
@@ -485,7 +484,7 @@
                           "privateIPAddress": "10.5.0.6",
                           "privateIPAllocationMethod": "Static",
                           "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'wssecuritySUFFIX', 'default')]"
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), 'default')]"
                           }
                       }
                   }
@@ -500,7 +499,7 @@
               ],
               "backendAddressPools": [
                   {
-                      "name": "wssecuritybepSUFFIX",
+                      "name": "[concat(variables('resourceName'), 'bep')]",
                       "properties": {
                           "backendAddresses": [
                               {
@@ -512,7 +511,7 @@
               ],
               "backendHttpSettingsCollection": [
                   {
-                      "name": "wssecurityhttpsetting",
+                      "name": "[concat(variables('resourceName'), 'httpsetting')]",
                       "properties": {
                           "port": 80,
                           "protocol": "Http",
@@ -524,13 +523,13 @@
               ],
               "httpListeners": [
                   {
-                      "name": "wssecuritylistenerSUFFIX",
+                      "name": "[concat(variables('resourceName'), 'listener')]",
                       "properties": {
                           "frontendIPConfiguration": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
                           },
                           "frontendPort": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/frontendPorts/port_80')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/frontendPorts/port_80')]"
                           },
                           "protocol": "Http",
                           "hostNames": [],
@@ -545,13 +544,13 @@
                       "properties": {
                           "ruleType": "Basic",
                           "httpListener": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/httpListeners/wssecuritylistenerSUFFIX')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/httpListeners/', concat(variables('resourceName'), 'listener'))]"
                           },
                           "backendAddressPool": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/backendAddressPools/wssecuritybepSUFFIX')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/backendAddressPools/', concat(variables('resourceName'), 'bep'))]"
                           },
                           "backendHttpSettings": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', 'wssecuritySUFFIX'), '/backendHttpSettingsCollection/wssecurityhttpsetting')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/backendHttpSettingsCollection/', concat(variables('resourceName'), 'httpsetting'))]"
                           }
                       }
                   }
