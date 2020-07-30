@@ -2,34 +2,83 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "uniqueSuffix": {
-      "type": "String",
-      "metadata": {
-        "description": "Suffix added to all resource name to make them unique."
-      }
-    }
+        "uniqueSuffix": {
+            "type": "String",
+            "metadata": {
+                "description": "Suffix added to all resource name to make them unique."
+            }
+        },
+        "region": {
+            "type": "String",
+            "metadata": {
+                "description": "Region to deploy too."
+            }
+        },
+        "adminUsername": {
+            "type": "String",
+            "defaultValue": "s2admin",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "adminPassword": {
+            "type": "String",
+            "defaultValue": "Solliance123",
+            "metadata": {
+                "description": ""
+            }
+        },
+        "vmSize": {
+            "defaultValue": "Standard_E2s_v3",
+            "type": "string"
+        }
   },
   "variables": {
-    "location": "[resourceGroup().location]",
-    "resourceName" : "[concat('wssecurity',parameters('uniqueSuffix'))]"
+      "location": "[resourceGroup().location]",
+      "resourceName": "[concat('wssecurity',parameters('uniqueSuffix'))]"
   },
   "resources": [
-    {
-      "type": "Microsoft.Resources/tags",
-      "name": "default",
-      "apiVersion": "2019-10-01",
-      "dependsOn": [],
-      "properties": {
-          "tags": {
-              "DeploymentId": "[parameters('uniqueSuffix')]"
+      {
+          "type": "Microsoft.Resources/tags",
+          "apiVersion": "2019-10-01",
+          "name": "default",
+          "dependsOn": [],
+          "properties": {
+              "tags": {
+                  "DeploymentId": "[parameters('uniqueSuffix')]"
+              }
           }
-      }
-    },
+      },
+      {
+        "type": "Microsoft.Storage/storageAccounts",
+        "sku": {
+          "name": "Standard_LRS"
+        },
+        "kind": "Storage",
+        "name": "[variables('resourceName')]",
+        "apiVersion": "2017-10-01",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "supportsHttpsTrafficOnly": "false",
+          "encryption": {
+            "services": {
+              "blob": {
+                "enabled": true
+              },
+              "file": {
+                "enabled": true
+              }
+            },
+            "keySource": "Microsoft.Storage"
+          }
+        },
+        "dependsOn": [ ]
+      },
       {
           "type": "Microsoft.Devices/IotHubs",
           "apiVersion": "2020-03-01",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "sku": {
               "name": "S1",
               "tier": "Standard",
@@ -92,7 +141,7 @@
           "type": "microsoft.insights/components",
           "apiVersion": "2018-05-01-preview",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "kind": "web",
           "properties": {
               "Application_Type": "web",
@@ -106,7 +155,7 @@
           "type": "Microsoft.KeyVault/vaults",
           "apiVersion": "2016-10-01",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "properties": {
               "sku": {
                   "family": "A",
@@ -168,7 +217,7 @@
           "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
           "apiVersion": "2020-05-01",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "properties": {
               "customRules": [],
               "policySettings": {
@@ -194,7 +243,7 @@
           "type": "Microsoft.Network/publicIPAddresses",
           "apiVersion": "2020-05-01",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "sku": {
               "name": "Standard"
           },
@@ -209,12 +258,13 @@
       {
           "type": "Microsoft.Network/virtualNetworks",
           "apiVersion": "2020-05-01",
-          "name": "[variables('resourceName')-hub]",
-          "location": "eastus",
+          "name": "[concat(variables('resourceName'),'-hub')]",
+          "location": "[variables('location')]",
           "properties": {
               "addressSpace": {
                   "addressPrefixes": [
-                      "10.0.0.0/16"
+                      "10.0.0.0/16",
+                      "10.1.0.0/16"
                   ]
               },
               "subnets": [
@@ -226,27 +276,9 @@
                           "privateEndpointNetworkPolicies": "Enabled",
                           "privateLinkServiceNetworkPolicies": "Enabled"
                       }
-                  }
-              ],
-              "virtualNetworkPeerings": [],
-              "enableDdosProtection": false,
-              "enableVmProtection": false
-          }
-      },
-      {
-        "type": "Microsoft.Network/virtualNetworks",
-        "apiVersion": "2020-05-01",
-        "name": "[variables('resourceName')-web]",
-        "location": "eastus",
-        "properties": {
-            "addressSpace": {
-                "addressPrefixes": [
-                    "10.1.0.0/16"
-                ]
-            },
-            "subnets": [
-                {
-                    "name": "default",
+                  },
+                  {
+                    "name": "gateway",
                     "properties": {
                         "addressPrefix": "10.1.0.0/24",
                         "delegations": [],
@@ -254,17 +286,44 @@
                         "privateLinkServiceNetworkPolicies": "Enabled"
                     }
                 }
-            ],
-            "virtualNetworkPeerings": [],
-            "enableDdosProtection": false,
-            "enableVmProtection": false
-        }
-    },
+              ],
+              "virtualNetworkPeerings": [],
+              "enableDdosProtection": false,
+              "enableVmProtection": false
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks",
+          "apiVersion": "2020-05-01",
+          "name": "[concat(variables('resourceName'),'-web')]",
+          "location": "[variables('location')]",
+          "properties": {
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "10.5.0.0/16"
+                  ]
+              },
+              "subnets": [
+                {
+                    "name": "default",
+                    "properties": {
+                        "addressPrefix": "10.5.0.0/24",
+                        "delegations": [],
+                        "privateEndpointNetworkPolicies": "Enabled",
+                        "privateLinkServiceNetworkPolicies": "Enabled"
+                    }
+                }
+              ],
+              "virtualNetworkPeerings": [],
+              "enableDdosProtection": false,
+              "enableVmProtection": false
+          }
+      },
       {
           "type": "microsoft.operationalinsights/workspaces",
           "apiVersion": "2020-03-01-preview",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "properties": {
               "sku": {
                   "name": "pergb2018"
@@ -281,7 +340,7 @@
           "type": "Microsoft.Web/serverfarms",
           "apiVersion": "2018-02-01",
           "name": "[variables('resourceName')]",
-          "location": "East US",
+          "location": "[variables('location')]",
           "sku": {
               "name": "P1v2",
               "tier": "PremiumV2",
@@ -302,40 +361,9 @@
           }
       },
       {
-          "type": "microsoft.alertsmanagement/smartdetectoralertrules",
-          "apiVersion": "2019-06-01",
-          "name": "[concat('failure anomalies ', variables('resourceName'))]",
-          "location": "global",
-          "dependsOn": [
-              "[resourceId('microsoft.insights/components', variables('resourceName'))]"
-          ],
-          "properties": {
-              "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
-              "state": "Enabled",
-              "severity": "Sev3",
-              "frequency": "PT1M",
-              "detector": {
-                  "id": "FailureAnomaliesDetector",
-                  "name": "Failure Anomalies",
-                  "description": "Detects if your application experiences an abnormal rise in the rate of HTTP requests or dependency calls that are reported as failed. The anomaly detection uses machine learning algorithms and occurs in near real time, therefore there's no need to define a frequency for this signal.<br/></br/>To help you triage and diagnose the problem, an analysis of the characteristics of the failures and related telemetry is provided with the detection. This feature works for any app, hosted in the cloud or on your own servers, that generates request or dependency telemetry - for example, if you have a worker role that calls <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackrequest\\\" target=\\\"_blank\\\">TrackRequest()</a> or <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackdependency\\\" target=\\\"_blank\\\">TrackDependency()</a>.<br/><br/><a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/azure-monitor/app/proactive-failure-diagnostics\\\" target=\\\"_blank\\\">Learn more about Failure Anomalies</a>",
-                  "supportedResourceTypes": [
-                      "ApplicationInsights"
-                  ]
-              },
-              "scope": [
-                  "[resourceId('microsoft.insights/components', variables('resourceName'))]"
-              ],
-              "actionGroups": {
-                  "groupIds": [
-                      "/subscriptions/e433f371-e5e9-4238-abc2-7c38aa596a18/resourcegroups/privacycentral/providers/microsoft.insights/actiongroups/application insights smart detection"
-                  ]
-              }
-          }
-      },
-      {
           "type": "Microsoft.Network/virtualNetworks/subnets",
           "apiVersion": "2020-05-01",
-          "name": "[concat(variables('resourceName'), '/default')]",
+          "name": "[concat(variables('resourceName'),'-hub', '/default')]",
           "dependsOn": [
               "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('resourceName'), '-hub'))]"
           ],
@@ -349,9 +377,9 @@
       {
         "type": "Microsoft.Network/virtualNetworks/subnets",
         "apiVersion": "2020-05-01",
-        "name": "[concat(variables('resourceName'), '/default')]",
+        "name": "[concat(variables('resourceName'),'-hub', '/gateway')]",
         "dependsOn": [
-            "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('resourceName'), '-web'))]"
+            "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('resourceName'), '-hub'))]"
         ],
         "properties": {
             "addressPrefix": "10.1.0.0/24",
@@ -361,10 +389,24 @@
         }
     },
       {
+          "type": "Microsoft.Network/virtualNetworks/subnets",
+          "apiVersion": "2020-05-01",
+          "name": "[concat(variables('resourceName'),'-web', '/default')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('resourceName'), '-web'))]"
+          ],
+          "properties": {
+              "addressPrefix": "10.5.0.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+          }
+      },
+      {
           "type": "Microsoft.Web/sites",
           "apiVersion": "2018-11-01",
           "name": "[variables('resourceName')]",
-          "location": "East US",
+          "location": "[variables('location')]",
           "dependsOn": [
               "[resourceId('Microsoft.Web/serverfarms', variables('resourceName'))]"
           ],
@@ -402,7 +444,7 @@
           "type": "Microsoft.Web/sites/config",
           "apiVersion": "2018-11-01",
           "name": "[concat(variables('resourceName'),'/web')]",
-          "location": "East US",
+          "location": "[variables('location')]",
           "dependsOn": [
               "[resourceId('Microsoft.Web/sites', variables('resourceName'))]"
           ],
@@ -473,7 +515,7 @@
           "type": "Microsoft.Web/sites/hostNameBindings",
           "apiVersion": "2018-11-01",
           "name": "[concat(variables('resourceName'), '/', variables('resourceName'), '.azurewebsites.net')]",
-          "location": "East US",
+          "location": "[variables('location')]",
           "dependsOn": [
               "[resourceId('Microsoft.Web/sites', variables('resourceName'))]"
           ],
@@ -486,9 +528,9 @@
           "type": "Microsoft.Network/applicationGateways",
           "apiVersion": "2020-05-01",
           "name": "[variables('resourceName')]",
-          "location": "eastus",
+          "location": "[variables('location')]",
           "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('resourceName'), '-hub', 'default')]",
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'), '-hub'), 'gateway')]",
               "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
           ],
           "properties": {
@@ -502,7 +544,7 @@
                       "name": "appGatewayIpConfig",
                       "properties": {
                           "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'),'-hub'), 'default')]"
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'),'-hub'), 'gateway')]"
                           }
                       }
                   }
@@ -522,10 +564,10 @@
                   {
                       "name": "appGwPrivateFrontendIp",
                       "properties": {
-                          "privateIPAddress": "10.5.0.6",
+                          "privateIPAddress": "10.1.0.6",
                           "privateIPAllocationMethod": "Static",
                           "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'),'-hub'), 'default')]"
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'),'-hub'), 'gateway')]"
                           }
                       }
                   }
@@ -544,7 +586,7 @@
                       "properties": {
                           "backendAddresses": [
                               {
-                                  "ipAddress": "10.0.0.5"
+                                  "ipAddress": "10.2.0.6"
                               }
                           ]
                       }
@@ -612,6 +654,191 @@
               },
               "enableHttp2": false
           }
+      },
+      {
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2019-07-01",
+        "name": "[concat(variables('resourceName'),'-linux-1')]",
+        "location": "[variables('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Network/networkInterfaces/', concat(variables('resourceName'), '-linux-1-nic'))]",
+          "[concat('Microsoft.Storage/storageAccounts/', variables('resourceName'))]"
+        ],
+        "properties": {
+            "hardwareProfile": {
+                "vmSize": "Standard_DS1_v2"
+            },
+            "storageProfile": {
+                "imageReference": {
+                    "publisher": "Canonical",
+                    "offer": "UbuntuServer",
+                    "sku": "18.04-LTS",
+                    "version": "latest"
+                },
+                "osDisk": {
+                    "osType": "Linux",
+                    "name": "[concat(variables('resourceName'),'-linux-1-os')]",
+                    "createOption": "FromImage",
+                    "caching": "ReadWrite",
+                    "managedDisk": {
+                        "storageAccountType": "Premium_LRS"
+                    },
+                    "diskSizeGB": 30
+                },
+                "dataDisks": []
+            },
+            "osProfile": {
+                "computerName": "linux-1",
+                "adminUsername": "[parameters('adminUsername')]",
+                "adminPassword": "[parameters('adminPassword')]",
+                "linuxConfiguration": {
+                    "disablePasswordAuthentication": false,
+                    "provisionVMAgent": true
+                },
+                "secrets": [],
+                "allowExtensionOperations": true
+            },
+            "networkProfile": {
+                "networkInterfaces": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('resourceName'), '-linux-1-nic'))]"
+                    }
+                ]
+            },
+            "diagnosticsProfile": {
+                "bootDiagnostics": {
+                    "enabled": true,
+                    "storageUri": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('resourceName')), '2015-06-15').primaryEndpoints['blob']]"
+                }
+            }
+        }
+    },
+    {
+      "name": "[concat(variables('resourceName'),'-linux-1-nic')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-09-01",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', concat(variables('resourceName'), '-hub'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('resourceName'), '-paw-1-nsg'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'), '-hub'), 'default')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(variables('resourceName'), '-paw-1-nsg'))]"
+        }
+      }
+    },
+      {
+        "name": "[concat(variables('resourceName'),'-paw-1')]",
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2016-04-30-preview",
+        "location": "[variables('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Network/networkInterfaces/', variables('resourceName'),'-paw-1-nic')]",
+          "[concat('Microsoft.Storage/storageAccounts/', variables('resourceName'))]"
+        ],
+        "properties": {
+          "osProfile": {
+            "computerName": "paw-1",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]",
+            "windowsConfiguration": {
+              "provisionVmAgent": "true"
+            }
+          },
+          "hardwareProfile": {
+            "vmSize": "[parameters('vmSize')]"
+          },
+          "storageProfile": {
+            "imageReference": {
+              "publisher": "microsoftvisualstudio",
+              "offer": "visualstudio2019latest",
+              "sku": "vs-2019-comm-latest-ws2019",
+              "version": "latest"
+          },
+            "osDisk": {
+              "createOption": "FromImage",
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+              }
+            },
+            "dataDisks": [ ]
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('resourceName'), '-paw-1-nic'))]"
+              }
+            ]
+          },
+          "diagnosticsProfile": {
+            "bootDiagnostics": {
+              "enabled": true,
+              "storageUri": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('resourceName')), '2015-06-15').primaryEndpoints['blob']]"
+            }
+          }
+        }
+      },
+      {
+        "name": "[concat(variables('resourceName'),'-paw-1-nic')]",
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2016-09-01",
+        "location": "[variables('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Network/publicIpAddresses/', concat(variables('resourceName'), '-paw-1-ip'))]",
+          "[concat('Microsoft.Network/virtualNetworks/', concat(variables('resourceName'), '-hub'))]",
+          "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('resourceName'), '-paw-1-nsg'))]"
+        ],
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "properties": {
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'), '-hub'), 'default')]"
+                },
+                "privateIPAllocationMethod": "Dynamic",
+                "publicIpAddress": {
+                  "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(variables('resourceName'), '-paw-1-ip'))]"
+                }
+              }
+            }
+          ],
+          "networkSecurityGroup": {
+            "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(variables('resourceName'), '-paw-1-nsg'))]"
+          }
+        }
+      },
+      {
+        "name": "[concat(variables('resourceName'),'-paw-1-ip')]",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2017-08-01",
+        "location": "[variables('location')]",
+        "properties": {
+          "publicIPAddressVersion": "IPv4",
+          "publicIPAllocationMethod": "Dynamic"
+        }
+      },
+      {
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "name": "[concat(variables('resourceName'),'-paw-1-nsg')]",
+        "apiVersion": "2017-06-01",
+        "location": "[variables('location')]",
+        "properties": {
+          "securityRules": [ ]
+        },
+        "dependsOn": [ ]
       }
   ]
 }
