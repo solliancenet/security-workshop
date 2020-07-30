@@ -242,7 +242,7 @@
       {
           "type": "Microsoft.Network/publicIPAddresses",
           "apiVersion": "2020-05-01",
-          "name": "[variables('resourceName')]",
+          "name": "[concat(variables('resourceName'),'-pip')]",
           "location": "[variables('location')]",
           "sku": {
               "name": "Standard"
@@ -531,7 +531,7 @@
           "location": "[variables('location')]",
           "dependsOn": [
               "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'), '-hub'), 'gateway')]",
-              "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
+              "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('resourceName'), '-pip'))]"
           ],
           "properties": {
               "sku": {
@@ -557,7 +557,7 @@
                       "properties": {
                           "privateIPAllocationMethod": "Dynamic",
                           "publicIPAddress": {
-                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('resourceName'))]"
+                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('resourceName'), '-pip'))]"
                           }
                       }
                   },
@@ -797,7 +797,7 @@
         "apiVersion": "2016-09-01",
         "location": "[variables('location')]",
         "dependsOn": [
-          "[concat('Microsoft.Network/publicIpAddresses/', concat(variables('resourceName'), '-paw-1-ip'))]",
+          "[concat('Microsoft.Network/publicIpAddresses/', concat(variables('resourceName'), '-paw-1-pip'))]",
           "[concat('Microsoft.Network/virtualNetworks/', concat(variables('resourceName'), '-hub'))]",
           "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('resourceName'), '-paw-1-nsg'))]"
         ],
@@ -811,7 +811,7 @@
                 },
                 "privateIPAllocationMethod": "Dynamic",
                 "publicIpAddress": {
-                  "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(variables('resourceName'), '-paw-1-ip'))]"
+                  "id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIpAddresses', concat(variables('resourceName'), '-paw-1-pip'))]"
                 }
               }
             }
@@ -822,7 +822,7 @@
         }
       },
       {
-        "name": "[concat(variables('resourceName'),'-paw-1-ip')]",
+        "name": "[concat(variables('resourceName'),'-paw-1-pip')]",
         "type": "Microsoft.Network/publicIPAddresses",
         "apiVersion": "2017-08-01",
         "location": "[variables('location')]",
