@@ -127,7 +127,8 @@ rm .\AzureCLI.msi
 Install-Module -Name SqlServer
 
 # Template deployment
-$resourceGroupName = (Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-L400" }).ResourceGroupName
+$rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-wssecurity" };
+$resourceGroupName = $rg.ResourceGroupName
 $deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
 
 $url = "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/spektra/deploy.parameters.post.json"
@@ -138,6 +139,7 @@ $wclient.Headers.Add("Cache-Control", "no-cache");
 $wclient.DownloadFile($url, $output)
 (Get-Content -Path "c:\LabFiles\parameters.json") | ForEach-Object {$_ -Replace "GET-AZUSER-PASSWORD", "$AzurePassword"} | Set-Content -Path "c:\LabFiles\parameters.json"
 (Get-Content -Path "c:\LabFiles\parameters.json") | ForEach-Object {$_ -Replace "GET-DEPLOYMENT-ID", "$deploymentId"} | Set-Content -Path "c:\LabFiles\parameters.json"
+(Get-Content -Path "c:\LabFiles\parameters.json") | ForEach-Object {$_ -Replace "GET-REGION", "$($rg.location)"} | Set-Content -Path "c:\LabFiles\parameters.json"
 
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
   -TemplateUri "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/00-core.json" `
@@ -146,14 +148,6 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
 Uninstall-AzureRm
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-
-#download the git repo...
-git clone https://github.com/solliancenet/security-workshop.git securityws
-
-cd './securityws/artifacts/environment-setup/automation'
-
-./01-environment-setup.ps1
-./03-environment-validation.ps1
 
 sleep 20
 Stop-Transcript
