@@ -154,7 +154,7 @@
       {
           "type": "Microsoft.KeyVault/vaults",
           "apiVersion": "2016-10-01",
-          "name": "[variables('resourceName')]",
+          "name": "[concat(variables('resourceName'),'-kv')]",
           "location": "[variables('location')]",
           "properties": {
               "sku": {
@@ -339,7 +339,7 @@
       {
           "type": "Microsoft.Web/serverfarms",
           "apiVersion": "2018-02-01",
-          "name": "[variables('resourceName')]",
+          "name": "[concat(variables('resourceName'),'-sf')]",
           "location": "[variables('location')]",
           "sku": {
               "name": "P1v2",
@@ -408,7 +408,7 @@
           "name": "[variables('resourceName')]",
           "location": "[variables('location')]",
           "dependsOn": [
-              "[resourceId('Microsoft.Web/serverfarms', variables('resourceName'))]"
+              "[resourceId('Microsoft.Web/serverfarms', concat(variables('resourceName'),'-sf'))]"
           ],
           "kind": "app",
           "properties": {
@@ -425,7 +425,7 @@
                       "hostType": "Repository"
                   }
               ],
-              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('resourceName'))]",
+              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(variables('resourceName'),'-sf'))]",
               "reserved": false,
               "isXenon": false,
               "hyperV": false,
@@ -527,7 +527,7 @@
       {
           "type": "Microsoft.Network/applicationGateways",
           "apiVersion": "2020-05-01",
-          "name": "[variables('resourceName')]",
+          "name": "[concat(variables('resourceName'),'-ag')]",
           "location": "[variables('location')]",
           "dependsOn": [
               "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('resourceName'), '-hub'), 'gateway')]",
@@ -609,10 +609,10 @@
                       "name": "[concat(variables('resourceName'), 'listener')]",
                       "properties": {
                           "frontendIPConfiguration": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', concat(variables('resourceName'),'-ag')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
                           },
                           "frontendPort": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/frontendPorts/port_80')]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', concat(variables('resourceName'),'-ag')), '/frontendPorts/port_80')]"
                           },
                           "protocol": "Http",
                           "hostNames": [],
@@ -627,13 +627,13 @@
                       "properties": {
                           "ruleType": "Basic",
                           "httpListener": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/httpListeners/', concat(variables('resourceName'), 'listener'))]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', concat(variables('resourceName'),'-ag')), '/httpListeners/', concat(variables('resourceName'), 'listener'))]"
                           },
                           "backendAddressPool": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/backendAddressPools/', concat(variables('resourceName'), 'bep'))]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', concat(variables('resourceName'),'-ag')), '/backendAddressPools/', concat(variables('resourceName'), 'bep'))]"
                           },
                           "backendHttpSettings": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('resourceName')), '/backendHttpSettingsCollection/', concat(variables('resourceName'), 'httpsetting'))]"
+                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', concat(variables('resourceName'),'-ag')), '/backendHttpSettingsCollection/', concat(variables('resourceName'), 'httpsetting'))]"
                           }
                       }
                   }
