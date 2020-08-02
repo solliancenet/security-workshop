@@ -1,0 +1,2 @@
+SEC-001	192.168.102.2	FileUpdate	c:\windows\system32\drivers\etc
+SEC-002	192.168.102.2	FileAdd	c:\windows\system32\dns.exe

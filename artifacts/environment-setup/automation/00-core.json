@@ -138,6 +138,20 @@
           }
       },
       {
+        "type": "Microsoft.Devices/provisioningServices",
+        "apiVersion": "2017-11-15",
+        "name": "[concat(variables('resourceName'),'-prov')]",
+        "location": "[variables('location')]",
+        "sku": {
+            "name": "S1",
+            "tier": "Standard",
+            "capacity": 1
+        },
+        "properties": {
+            "iotHubs": []
+        }
+    },
+      {
           "type": "microsoft.insights/components",
           "apiVersion": "2018-05-01-preview",
           "name": "[variables('resourceName')]",
