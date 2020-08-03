@@ -19,6 +19,28 @@ Param (
   $deploymentId
 )
 
+function InstallNotepadPP()
+{
+	#check for executables...
+	$item = get-item "C:\Program Files (x86)\Notepad++\notepad++.exe" -ea silentlycontinue;
+	
+	if (!$item)
+	{
+		$downloadNotePad = "https://notepad-plus-plus.org/repository/7.x/7.5.4/npp.7.5.4.Installer.exe";
+
+        mkdir c:\temp
+		
+		#download it...		
+		Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\npp.exe"
+		
+		#install it...
+		$productPath = "c:\temp";				
+		$productExec = "npp.exe"	
+		$argList = "/S"
+		start-process "$productPath\$productExec" -ArgumentList $argList -wait
+	}
+}
+
 #Disable-InternetExplorerESC
 function DisableInternetExplorerESC
 {
@@ -90,6 +112,8 @@ DisableInternetExplorerESC
 EnableIEFileDownload
 
 InstallAzPowerShellModule
+
+InstallNotepadPP
 
 CreateLabFilesDirectory
 
