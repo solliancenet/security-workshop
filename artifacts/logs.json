@@ -1,0 +1,27 @@
+{
+    "logs":
+    [
+        {
+            "AzureDeploymentId": "ffe8f243-3ec8-465c-8648-14fea7a7f9ba",
+            "Computer": "paw-1",
+            "EventCategory": "Audit Policy Change",
+            "EventData": "<DataItem type=\"System.XmlData\" time=\"2020-08-04T15:05:49.3777969+00:00\" sourceHealthServiceId=\"982579D6-578F-779F-DFCA-33553A84FFA0\"><EventData xmlns=\"http://schemas.microsoft.com/win/2004/08/events/event\"><Data Name=\"param1\">Network Setup Service</Data><Data Name=\"param2\">running</Data><Binary>4E0065007400530065007400750070005300760063002F0034000000</Binary></EventData></DataItem>",
+            "EventID": "4719",
+            "EventLevel": "4",
+            "EventLevelName": "Information",
+            "EventLog": "Security",
+            "ManagementGroupName": "AOI-ffe8f243-3ec8-465c-8648-14fea7a7f9ba",
+            "Message": "LCID;1033	Locale;ENU	Message;The %1 service entered the %2 state.",
+            "ParameterXML": "<Param>Network Setup Service</Param><Param>running</Param><Param>-</Param>",
+            "RenderedDescription": "The Network Setup Service service entered the running state.",
+            "UserName" : null,
+            "Role": null,
+            "Source": "OpsManager",
+            "TimeStamp" : "",
+            "IPAddress" : "192.168.102.2",
+            "Type" : "Event",
+            "MG" : "00000000-0000-0000-0000-000000000001",
+            "_ResourceId" : "/subscriptions/e433f371-e5e9-4238-abc2-7c38aa596a18/resourcegroups/cjg-security/providers/microsoft.compute/virtualmachines/wssecuritycjg12345-paw-1"
+        }
+    ]
+}

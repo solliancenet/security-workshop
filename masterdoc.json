@@ -1,6 +1,6 @@
 [
     {
-      "Name": "Virutal Devintersection Security Workshop",
+      "Name": "Virutal Devintersection - Security Workshop",
       "Language": "English",
       "Files": [
         {
@@ -16,12 +16,32 @@
           "Order": 3
         }     ,
         {
-          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/02_Lab01.md",
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/01_Lab03.md",
           "Order": 4
         },
         {
-          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/02_Lab02.md",
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/01_Lab04.md",
           "Order": 5
+        }
+        ,
+        {
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/01_Lab05.md",
+          "Order": 6
+        }
+        ,
+        {
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/01_Lab06.md",
+          "Order": 7
+        }
+        ,
+        {
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/02_Lab01.md",
+          "Order": 8
+        }
+        ,
+        {
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/02_Lab02.md",
+          "Order": 9
         }
       ]
     }
