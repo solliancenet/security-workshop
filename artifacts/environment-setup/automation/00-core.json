@@ -173,53 +173,11 @@
           "properties": {
               "sku": {
                   "family": "A",
-                  "name": "Standard"
+                  "name": "standard"
               },
-              "tenantId": "d280491c-b27a-41bf-9623-21b60cf430b3",
+              "tenantId": "[subscription().tenantId]",
               "accessPolicies": [
-                  {
-                      "tenantId": "d280491c-b27a-41bf-9623-21b60cf430b3",
-                      "objectId": "c1c8abcf-aa1f-443b-aa47-93df8879d9b2",
-                      "permissions": {
-                          "keys": [
-                              "Get",
-                              "List",
-                              "Update",
-                              "Create",
-                              "Import",
-                              "Delete",
-                              "Recover",
-                              "Backup",
-                              "Restore"
-                          ],
-                          "secrets": [
-                              "Get",
-                              "List",
-                              "Set",
-                              "Delete",
-                              "Recover",
-                              "Backup",
-                              "Restore"
-                          ],
-                          "certificates": [
-                              "Get",
-                              "List",
-                              "Update",
-                              "Create",
-                              "Import",
-                              "Delete",
-                              "Recover",
-                              "Backup",
-                              "Restore",
-                              "ManageContacts",
-                              "ManageIssuers",
-                              "GetIssuers",
-                              "ListIssuers",
-                              "SetIssuers",
-                              "DeleteIssuers"
-                          ]
-                      }
-                  }
+                  
               ],
               "enabledForDeployment": false,
               "enabledForDiskEncryption": false,
