@@ -3,16 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "vmAdminUsername": {
-        "type": "String"
+        "type": "string"
       },
       "vmAdminPassword": {
-        "type": "SecureString"
+        "type": "string"
       },
       "azureUsername": {
         "type": "string"
       },
       "azurePassword": {
-        "type": "securestring"
+        "type": "string"
       },
       "odlId": {
         "type": "string"
@@ -193,7 +193,7 @@
               "autoUpgradeMinorVersion": true,
               "settings": {
                 "fileUris": [
-                  "https://raw.githubusercontent.com/solliancenet/azure-synapse-analytics-workshop-400/master/artifacts/environment-setup/spektra/post-install-script01.ps1"
+                  "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/spektra/post-install-script01.ps1"
                 ]
               },
               "protectedSettings": {
