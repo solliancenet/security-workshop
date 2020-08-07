@@ -19,6 +19,26 @@ Param (
   $deploymentId
 )
 
+function InstallGit
+{
+  #download and install git...		
+  $output = "c:\LabFiles\git.exe";
+  Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
+
+  $productPath = "c:\LabFiles";				
+  $productExec = "git.exe"	
+  $argList = "/SILENT"
+  start-process "$productPath\$productExec" -ArgumentList $argList -wait
+}
+
+function InstallAzCli
+{
+  #install azure cli
+  Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; 
+  Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; 
+  rm .\AzureCLI.msi
+}
+
 function InstallNotepadPP()
 {
 	#check for executables...
@@ -113,15 +133,23 @@ EnableIEFileDownload
 
 InstallAzPowerShellModule
 
+InstallAzCli
+
 InstallNotepadPP
 
+#InstallGit
+
 CreateLabFilesDirectory
+
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 cd "c:\labfiles";
 
 CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
 
 . C:\LabFiles\AzureCreds.ps1
+
+Uninstall-AzureRm
 
 $userName = $AzureUserName                # READ FROM FILE
 $password = $AzurePassword                # READ FROM FILE
@@ -133,47 +161,32 @@ $cred = new-object -typename System.Management.Automation.PSCredential -argument
 
 Connect-AzAccount -Credential $cred | Out-Null
  
-#download and install git...		
-$output = "c:\LabFiles\git.exe";
-Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
-
-$productPath = "c:\LabFiles";				
-$productExec = "git.exe"	
-$argList = "/SILENT"
-start-process "$productPath\$productExec" -ArgumentList $argList -wait
-        
-#install azure cli
-Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; 
-Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; 
-rm .\AzureCLI.msi
-
 #install sql server cmdlets
 Install-Module -Name SqlServer
+
+git clone https://github.com/solliancenet/security-workshop.git
 
 # Template deployment
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-wssecurity" };
 $resourceGroupName = $rg.ResourceGroupName
 $deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
 
-$url = "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/spektra/deploy.parameters.post.json"
-$output = "c:\LabFiles\parameters.json";
-$wclient = New-Object System.Net.WebClient;
-$wclient.CachePolicy = new-object System.Net.Cache.RequestCachePolicy([System.Net.Cache.RequestCacheLevel]::NoCacheNoStore);
-$wclient.Headers.Add("Cache-Control", "no-cache");
-$wclient.DownloadFile($url, $output)
-(Get-Content -Path "c:\LabFiles\parameters.json") | ForEach-Object {$_ -Replace "GET-AZUSER-PASSWORD", "$AzurePassword"} | Set-Content -Path "c:\LabFiles\parameters.json"
-(Get-Content -Path "c:\LabFiles\parameters.json") | ForEach-Object {$_ -Replace "GET-DEPLOYMENT-ID", "$deploymentId"} | Set-Content -Path "c:\LabFiles\parameters.json"
-(Get-Content -Path "c:\LabFiles\parameters.json") | ForEach-Object {$_ -Replace "GET-REGION", "$($rg.location)"} | Set-Content -Path "c:\LabFiles\parameters.json"
+$parametersFile = "c:\labfiles\security-workshop\artifacts\environment-setup\spektra\deploy.parameters.post.json"
+$content = Get-Content -Path $parametersFile -raw;
+
+$content = $content.Replace("GET-AZUSER-PASSWORD",$azurepassword);
+
+$content = $content | ForEach-Object {$_ -Replace "GET-AZUSER-PASSWORD", "$AzurePassword"};
+$content = $content | ForEach-Object {$_ -Replace "GET-DEPLOYMENT-ID", "$deploymentId"};
+$content = $content | ForEach-Object {$_ -Replace "GET-REGION", "$($rg.location)"};
+$content | Set-Content -Path "$($parametersFile).json";
 
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
   -TemplateUri "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/00-core.json" `
-  -TemplateParameterFile "c:\LabFiles\parameters.json"
-
-Uninstall-AzureRm
-
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+  -TemplateParameterFile "$($parametersFile).json"
 
 Publish-AzWebapp -ResourceGroupName $resourceGroupName -Name "wssecurity$deploymentId" -ArchivePath "c:\labfiles\security-workshop\artifacts\AzureKeyVaultMSI.zip"
 
 sleep 20
+
 Stop-Transcript
