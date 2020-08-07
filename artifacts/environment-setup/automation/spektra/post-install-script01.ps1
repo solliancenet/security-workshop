@@ -173,5 +173,7 @@ Uninstall-AzureRm
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
+Publish-AzWebapp -ResourceGroupName $resourceGroupName -Name "wssecurity$deploymentId" -ArchivePath "c:\labfiles\security-workshop\artifacts\AzureKeyVaultMSI.zip"
+
 sleep 20
 Stop-Transcript
