@@ -85,9 +85,18 @@ function EnableIEFileDownload
 #Create InstallAzPowerShellModule
 function InstallAzPowerShellModule
 {
-  Install-PackageProvider NuGet -Force
-  Set-PSRepository PSGallery -InstallationPolicy Trusted
-  Install-Module Az -Repository PSGallery -Force -AllowClobber
+  write-host "Installing Azure PowerShell";
+
+    $pp = Get-PackageProvider -Name NuGet -Force
+    
+    Set-PSRepository PSGallery -InstallationPolicy Trusted
+
+    $m = get-module -ListAvailable -name Az.Accounts
+
+    if (!$m)
+    {
+        Install-Module Az -Repository PSGallery -Force -AllowClobber
+    }
 }
 
 #Create-LabFilesDirectory
@@ -100,8 +109,8 @@ function CreateLabFilesDirectory
 function CreateCredFile($azureUsername, $azurePassword, $azureTenantID, $azureSubscriptionID, $deploymentId)
 {
   $WebClient = New-Object System.Net.WebClient
-  $WebClient.DownloadFile("https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/spektra/AzureCreds.txt","C:\LabFiles\AzureCreds.txt")
-  $WebClient.DownloadFile("https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/spektra/AzureCreds.ps1","C:\LabFiles\AzureCreds.ps1")
+  $WebClient.DownloadFile("https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/spektra/AzureCreds.ps1","C:\LabFiles\AzureCreds.txt")
+  $WebClient.DownloadFile("https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/spektra/AzureCreds.ps1","C:\LabFiles\AzureCreds.ps1")
 
   (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "ClientIdValue", ""} | Set-Content -Path "C:\LabFiles\AzureCreds.ps1"
   (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "AzureUserNameValue", "$azureUsername"} | Set-Content -Path "C:\LabFiles\AzureCreds.txt"
@@ -171,7 +180,7 @@ $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-wssecur
 $resourceGroupName = $rg.ResourceGroupName
 $deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
 
-$parametersFile = "c:\labfiles\security-workshop\artifacts\environment-setup\spektra\deploy.parameters.post.json"
+$parametersFile = "c:\labfiles\security-workshop\artifacts\environment-setup\automation\spektra\deploy.parameters.post.json"
 $content = Get-Content -Path $parametersFile -raw;
 
 $content = $content.Replace("GET-AZUSER-PASSWORD",$azurepassword);
