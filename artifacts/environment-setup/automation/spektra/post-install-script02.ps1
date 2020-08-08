@@ -1,3 +1,24 @@
+Param (
+  [Parameter(Mandatory = $true)]
+  [string]
+  $azureUsername,
+
+  [string]
+  $azurePassword,
+
+  [string]
+  $azureTenantID,
+
+  [string]
+  $azureSubscriptionID,
+
+  [string]
+  $odlId,
+    
+  [string]
+  $deploymentId
+)
+
 function InstallGit
 {
   #download and install git...		
@@ -135,7 +156,42 @@ cd "c:\labfiles";
 
 Uninstall-AzureRm
 
+$userName = $AzureUserName                # READ FROM FILE
+$password = $AzurePassword                # READ FROM FILE
+$clientId = $TokenGeneratorClientId       # READ FROM FILE
+$global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
+
+$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
+
+Connect-AzAccount -Credential $cred | Out-Null
+
 git clone https://github.com/solliancenet/security-workshop.git
+
+#get the waf public IP
+$wafIp = "";
+
+#get the app svc url
+$appUrl = "";
+
+#get the workspace Id
+$workspaceId = "";
+$workspaceKey = "";
+
+#update the updatedatafiles.ps1
+$content = get-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" -raw
+$content = $content.replace("#IN_WORKSPACE_ID#",$workspaceId);
+$content = $content.replace("#IN_WORKSPACE_KEY#",$workspaceKey);
+$content = $content.replace("#IN_SUBSCRIPTION_ID#",$azureSubscriptionID);
+$content = $content.replace("#IN_RESOURCE_GROUP_NAME#",$resourceGroupName);
+$content = $content.replace("#IN_DEPLOYMENT_ID#",$deploymentId);
+$content = $content.replace("#IN_WAF_IP#",$wafIp);
+$content = $content.replace("#IN_APP_SVC_URL#",$appUrl);
+set-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" $content;
+
+#add to HOSTS
+$line = "#$wafIp`t$appUrl"
+add-content "c:\windows\system32\drivers\etc\HOSTS" $line
 
 sleep 20
 

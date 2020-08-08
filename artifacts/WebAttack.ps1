@@ -533,8 +533,11 @@ function Attack_XSS($url)
 
 #Learn more about the rules here : https://github.com/SpiderLabs/owasp-modsecurity-crs/tree/v3.0/master/rules
 
-$ipAddress = read-host "what is your waf ip?";
-$url = read-host "what is your url";
+#$ipAddress = read-host "what is your waf ip?";
+#$url = read-host "what is your url";
+
+$ipAddress = "#WAF_IP#";
+$url = "#APP_SVC_URL#"
 
 Attack_HostHeaderIP $ipAddress;
 
