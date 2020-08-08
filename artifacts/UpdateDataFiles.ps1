@@ -15,6 +15,7 @@ $ht.add("#TODAY#",[DateTime]::NOW.ToString("YYYY-mm-DD"));
 $ht.add("#TIMESTAMP#",[DateTime]::NOW);
 $ht.add("#SUBSCRIPTION_ID#", "");
 $ht.add("#RESOURCE_GROUP_NAME#", "");
+$ht.add("#IP#", "203.160.71.100");
 
 UpdateFile "logfile.txt" $ht;
 UpdateFile "logs.json" $ht;
