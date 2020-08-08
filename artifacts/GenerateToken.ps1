@@ -83,7 +83,7 @@ function Add-LeftPad($str, $len, $pad) {
     return $str;
 }
 
-$password = "nWBSTFLmBjCT8A==";
+$password = "hh2h6n7hrv5tnxkr";
 
 $token = Get-Otp $password 6 60;
 
