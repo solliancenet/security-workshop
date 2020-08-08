@@ -1,24 +1,3 @@
-Param (
-  [Parameter(Mandatory = $true)]
-  [string]
-  $azureUsername,
-
-  [string]
-  $azurePassword,
-
-  [string]
-  $azureTenantID,
-
-  [string]
-  $azureSubscriptionID,
-
-  [string]
-  $odlId,
-    
-  [string]
-  $deploymentId
-)
-
 function InstallGit
 {
   #download and install git...		
@@ -154,50 +133,9 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 cd "c:\labfiles";
 
-CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
-
-. C:\LabFiles\AzureCreds.ps1
-
 Uninstall-AzureRm
 
-$userName = $AzureUserName                # READ FROM FILE
-$password = $AzurePassword                # READ FROM FILE
-$clientId = $TokenGeneratorClientId       # READ FROM FILE
-$global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
-
-$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
-$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
-
-Connect-AzAccount -Credential $cred | Out-Null
- 
-#install sql server cmdlets
-Install-Module -Name SqlServer
-
 git clone https://github.com/solliancenet/security-workshop.git
-
-# Template deployment
-$rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-wssecurity" };
-$resourceGroupName = $rg.ResourceGroupName
-$deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
-
-$parametersFile = "c:\labfiles\security-workshop\artifacts\environment-setup\automation\spektra\deploy.parameters.post.json"
-$content = Get-Content -Path $parametersFile -raw;
-
-$content = $content.Replace("GET-AZUSER-PASSWORD",$azurepassword);
-
-$content = $content | ForEach-Object {$_ -Replace "GET-AZUSER-PASSWORD", "$AzurePassword"};
-$content = $content | ForEach-Object {$_ -Replace "GET-DEPLOYMENT-ID", "$deploymentId"};
-$content = $content | ForEach-Object {$_ -Replace "GET-REGION", "$($rg.location)"};
-$content | Set-Content -Path "$($parametersFile).json";
-
-New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
-  -TemplateUri "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/00-core.json" `
-  -TemplateParameterFile "$($parametersFile).json"
-
-$keyVaultName = "wssecurity$deploymentId-kv";
-Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list
-
-Publish-AzWebapp -ResourceGroupName $resourceGroupName -Name "wssecurity$deploymentId" -ArchivePath "c:\labfiles\security-workshop\artifacts\AzureKeyVaultMSI.zip" -force
 
 sleep 20
 

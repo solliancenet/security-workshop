@@ -55,38 +55,12 @@ $key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 $key = "nLJiPZZYE241/ndD/+STnN/v+Wbxu2iyc8duk3zQmSpjzOQYpxnTq15PMhFCPu1xGq13u6sWcts1xsydXNt67g==";
 
 # Specify the name of the record type that you'll be creating
-$LogType = "MyRecordType"
+$LogType = "OrgSecurity"
 
 # You can use an optional field to specify the timestamp from the data. If the time field is not specified, Azure Monitor assumes the time is the message ingestion time
-$TimeStampField = "DateValue"
+$TimeStampField = "EventTimestamp"
 
-# Create two records with the same set of properties to create
-$json = @"
-[{  "StringValue": "MyString1",
-    "NumberValue": 42,
-    "SourceSystem": "OpsManager",
-    "BooleanValue": true,
-    "IsThreat": true,
-    "ManagementGroupName": "AOI-ffe8f243-3ec8-465c-8648-14fea7a7f9ba",
-    "DateValue": "2020-08-03T20:00:00.625Z",
-    "GUIDValue": "9909ED01-A74C-4874-8ABF-D2678E3AE23D",
-    "Computer" : "paw-1",
-    "IPAddress" : "10.0.0.5",
-    "ResourceId" : "/subscriptions/e433f371-e5e9-4238-abc2-7c38aa596a18/resourcegroups/cjg-security/providers/microsoft.compute/virtualmachines/wssecuritycjg12345-paw-1"
-},
-{   "StringValue": "MyString2",
-    "NumberValue": 43,
-    "SourceSystem": "OpsManager",
-    "BooleanValue": false,
-    "IsThreat": false,
-    "ManagementGroupName": "AOI-ffe8f243-3ec8-465c-8648-14fea7a7f9ba",
-    "DateValue": "2020-08-03T20:00:00.625Z",
-    "GUIDValue": "8809ED01-A74C-4874-8ABF-D2678E3AE23D",
-    "Computer" : "paw-1",
-    "IPAddress" : "10.0.0.5",
-    "ResourceId" : "/subscriptions/e433f371-e5e9-4238-abc2-7c38aa596a18/resourcegroups/cjg-security/providers/microsoft.compute/virtualmachines/wssecuritycjg12345-paw-1"
-}]
-"@
+$json = Get-Content "logs.json" -raw;
 
 # Submit the data to the API endpoint
 Post-LogAnalyticsData -workspaceId $workspaceId -key $key -body ([System.Text.Encoding]::UTF8.GetBytes($json)) -logType $logType

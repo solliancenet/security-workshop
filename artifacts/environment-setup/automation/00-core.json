@@ -761,7 +761,36 @@
               "storageUri": "[reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('resourceName')), '2015-06-15').primaryEndpoints['blob']]"
             }
           }
-        }
+        },
+        "resources": [
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "name": "[concat(variables('vmName'),'/', 'winExtension')]",
+              "apiVersion": "2015-06-15",
+              "location": "[resourceGroup().location]",
+              "comments": "Script",
+              "tags": {
+                "displayName": "VM Extension"
+              },
+              "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+              ],
+              "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.8",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "fileUris": [
+                    "https://raw.githubusercontent.com/solliancenet/security-workshop/master/artifacts/environment-setup/automation/spektra/post-install-script02.ps1"
+                  ]
+                },
+                "protectedSettings": {
+                  "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File post-install-script02.ps1')]"
+                }
+              }
+            }
+          ]
       },
       {
         "name": "[concat(variables('resourceName'),'-paw-1-nic')]",
@@ -809,7 +838,21 @@
         "apiVersion": "2017-06-01",
         "location": "[variables('location')]",
         "properties": {
-          "securityRules": [ ]
+          "securityRules": [
+            {
+                "name": "RDP",
+                "properties": {
+                  "priority": 1000,
+                  "protocol": "Tcp",
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "sourceAddressPrefix": "*",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*",
+                  "destinationPortRange": "3389"
+                }
+              }
+           ]
         },
         "dependsOn": [ ]
       }
