@@ -1,21 +1,21 @@
-# Security-workshop
+# Virtual Dev Intersection Security Workshop
 
-Virtual Dev Intersection Security Workshop.
+Join me as we explore the various security features that make Azure one of the most secure cloud platforms in the world. Some topics that we will explore include the monitoring agents, kusto queries, Azure Sentinel hunting with python notebooks, Azure Key Vault integrations and much more!
 
 ## Labs
 
 ### Day 1
 
-Lab 1: Azure Key Vault, Managed Service Identities
-Lab 2: Log Analytics Customization
-Lab 3: Web Application Firewall
-Lab 4: IoT Hub with Azure Security Center for IoT
-Lab 5: Active Directory Security (Sign-ins, MFA)
+- Lab 1: Azure Key Vault, Managed Service Identities
+- Lab 2: Log Analytics Customization
+- Lab 3: Web Application Firewall
+- Lab 4: IoT Hub with Azure Security Center for IoT
+- Lab 5: Active Directory Security (Sign-ins, MFA)
 
 ### Day 2
 
-Lab 1: Azure Sentinel (Basics, Hunting, Notebooks)
-Lab 2: Log Analytics Solutions with Azure Security Center
+- Lab 1: Azure Sentinel (Basics, Hunting, Notebooks)
+- Lab 2: Log Analytics Solutions with Azure Security Center
 
 ## Reference Links
 
