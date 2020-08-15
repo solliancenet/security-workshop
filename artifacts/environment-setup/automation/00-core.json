@@ -16,7 +16,7 @@
         },
         "adminUsername": {
             "type": "String",
-            "defaultValue": "s2admin",
+            "defaultValue": "wsuser",
             "metadata": {
                 "description": ""
             }
@@ -35,7 +35,22 @@
   },
   "variables": {
       "location": "[resourceGroup().location]",
-      "resourceName": "[concat('wssecurity',parameters('uniqueSuffix'))]"
+      "resourceName": "[concat('wssecurity',parameters('uniqueSuffix'))]",
+      "automationMap" : {
+        "Australia Southeast" : { "region": "Australia Southeast"},
+        "Canada Central" : { "region": "Canada Central"},
+        "Central India" : { "region": "Central India"},
+        "East US" : { "region": "East US"},
+        "East US 2" : { "region": "East US"},
+        "Japan East" : { "region": "Japan East"},
+        "South Central US" : { "region": "South Central US"},
+        "Southeast Asia" : { "region": "Southeast Asia"},
+        "UK South" : { "region": "UK South"},
+        "West Cental US" : { "region": "West Cental US 2"},
+        "West Cental US 2" : { "region": "West Cental US 2"},
+        "West Europe" : { "region": "West Europe"},
+        "West US 2" : { "region": "West US 2"}
+      }
   },
   "resources": [
       {
@@ -292,10 +307,21 @@
           }
       },
       {
+        "type": "Microsoft.Automation/automationAccounts",
+        "apiVersion": "2015-10-31",
+        "name": "[variables('resourceName')]",
+        "location": "West US 2",
+        "properties": {
+            "sku": {
+                "name": "Basic"
+            }
+        }
+    },
+      {
           "type": "microsoft.operationalinsights/workspaces",
           "apiVersion": "2020-03-01-preview",
           "name": "[variables('resourceName')]",
-          "location": "[variables('location')]",
+          "location": "West US 2",
           "properties": {
               "sku": {
                   "name": "pergb2018"

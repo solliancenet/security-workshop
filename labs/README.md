@@ -1,6 +1,6 @@
 # Virtual Dev Intersection Security Workshop
 
-Join me as we explore the various security features that make Azure one of the most secure cloud platforms in the world. Some topics that we will explore include the monitoring agents, kusto queries, Azure Sentinel hunting with python notebooks, Azure Key Vault integrations and much more!
+Join me as we explore the various security features that make Azure one of the most secure cloud platforms in the world. Some topics that we will explore include the Microsoft Monitoring Agents, Kusto queries, Azure Sentinel hunting with python notebooks, Azure Key Vault integrations and much more!
 
 ## Schedule
 

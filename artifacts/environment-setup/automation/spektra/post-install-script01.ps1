@@ -19,6 +19,26 @@ Param (
   $deploymentId
 )
 
+function InstallPutty()
+{
+    write-host "Installing Putty";
+
+    #check for executables...
+	$item = get-item "C:\Program Files\Putty\putty.exe" -ea silentlycontinue;
+	
+	if (!$item)
+	{
+		$downloadNotePad = "https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.74-installer.msi";
+
+        mkdir c:\temp -ea silentlycontinue 
+		
+		#download it...		
+		Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\putty.msi"
+        
+        msiexec.exe /I c:\temp\Putty.msi /quiet
+	}
+}
+
 function InstallGit
 {
   #download and install git...		
@@ -146,6 +166,8 @@ InstallAzCli
 
 InstallNotepadPP
 
+InstallPutty
+
 #InstallGit
 
 CreateLabFilesDirectory
@@ -195,7 +217,7 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
   -TemplateParameterFile "$($parametersFile).json"
 
 $keyVaultName = "wssecurity$deploymentId-kv";
-Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list
+Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list -PermissionsToKeys set,delete,get,list
 
 Publish-AzWebapp -ResourceGroupName $resourceGroupName -Name "wssecurity$deploymentId" -ArchivePath "c:\labfiles\security-workshop\artifacts\AzureKeyVaultMSI.zip" -force
 
