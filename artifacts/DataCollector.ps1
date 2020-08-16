@@ -47,11 +47,11 @@ Function Post-LogAnalyticsData($workspaceId, $key, $body, $logType)
 }
 
 # Replace with your Workspace ID
-$workspaceId = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+$workspaceId = "#WORKSPACE_ID#"
 $workspaceId = "ffe8f243-3ec8-465c-8648-14fea7a7f9ba";
 
 # Replace with your Primary Key
-$key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+$key = "#WORKSPACE_KEY#"
 $key = "nLJiPZZYE241/ndD/+STnN/v+Wbxu2iyc8duk3zQmSpjzOQYpxnTq15PMhFCPu1xGq13u6sWcts1xsydXNt67g==";
 
 # Specify the name of the record type that you'll be creating

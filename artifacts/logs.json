@@ -18,7 +18,7 @@
         "Role": null,
         "Source": "OpsManager",
         "TimeStamp" : "",
-        "IPAddress" : "#IP#",
+        "IPAddress" : "#IP_1#",
         "Type" : "Event",
         "MG" : "00000000-0000-0000-0000-000000000001",
         "ResourceId" : "/subscriptions/#SUBSCRIPTION_ID#/resourcegroups/#RESOURCE_GROUP_NAME#/providers/microsoft.compute/virtualmachines/#RESOURCE_GROUP_NAME#-paw-1"
@@ -42,7 +42,7 @@
         "Role": null,
         "Source": "OpsManager",
         "TimeStamp" : "",
-        "IPAddress" : "#IP#",
+        "IPAddress" : "#IP_1#",
         "Type" : "Event",
         "MG" : "00000000-0000-0000-0000-000000000001",
         "ResourceId" : "/subscriptions/#SUBSCRIPTION_ID#/resourcegroups/#RESOURCE_GROUP_NAME#/providers/microsoft.compute/virtualmachines/#RESOURCE_GROUP_NAME#-paw-1"
