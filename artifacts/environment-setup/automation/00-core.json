@@ -28,6 +28,18 @@
                 "description": ""
             }
         },
+        "azureUsername": {
+            "type": "string"
+            },
+        "azurePassword": {
+            "type": "string"
+        },
+        "odlId": {
+            "type": "string"
+        },
+        "deploymentId": {
+            "type": "string"
+        },
         "vmSize": {
             "defaultValue": "Standard_E2s_v3",
             "type": "string"

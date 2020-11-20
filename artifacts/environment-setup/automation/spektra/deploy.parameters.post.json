@@ -13,6 +13,18 @@
       },
       "region": {
         "value": "GET-REGION"
+      },
+      "azureUsername": {
+        "value": "GET-AZUSER-UPN"
+      },
+      "azurePassword": {
+        "value": "GET-AZUSER-PASSWORD"
+      },
+      "odlId": {
+        "value": "GET-ODL-ID"
+      },
+      "deploymentId": {
+        "value": "GET-DEPLOYMENT-ID"
       }
     }
   }
