@@ -11,7 +11,7 @@ namespace AzureKeyVaultMSI.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.KeyValue = ConfigurationManager.AppSettings["SecertUrl"];
+            ViewBag.KeyValue = ConfigurationManager.AppSettings["SecretUrl"];
             return View();
         }
 
