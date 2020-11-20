@@ -22,10 +22,10 @@ Param (
 function InstallGit
 {
   #download and install git...		
-  $output = "c:\LabFiles\git.exe";
+  $output = "c:\temp\git.exe";
   Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
 
-  $productPath = "c:\LabFiles";				
+  $productPath = "c:\temp";				
   $productExec = "git.exe"	
   $argList = "/SILENT"
   start-process "$productPath\$productExec" -ArgumentList $argList -wait
@@ -48,7 +48,7 @@ function InstallNotepadPP()
 	{
 		$downloadNotePad = "https://notepad-plus-plus.org/repository/7.x/7.5.4/npp.7.5.4.Installer.exe";
 
-        mkdir c:\temp
+    mkdir c:\temp
 		
 		#download it...		
 		Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\npp.exe"
@@ -136,6 +136,13 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 [Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
 
+CreateLabFilesDirectory
+mkdir c:\temp
+
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+cd "c:\labfiles";
+
 DisableInternetExplorerESC
 
 EnableIEFileDownload
@@ -148,13 +155,9 @@ InstallNotepadPP
 
 InstallGit
 
-CreateLabFilesDirectory
-
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-
-cd "c:\labfiles";
-
 Uninstall-AzureRm
+
+CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
 
 . C:\LabFiles\AzureCreds.ps1
 
@@ -170,11 +173,16 @@ Connect-AzAccount -Credential $cred | Out-Null
 
 git clone https://github.com/solliancenet/security-workshop.git
 
+$rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-wssecurity" };
+$resourceGroupName = $rg.ResourceGroupName
+$deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
+
 #get the waf public IP
 $wafName = "wssecurity" + $deploymentId + "-ag";
 $appGW = Get-AzApplicationGateway -name $wafName;
 $fipconfig = Get-AzApplicationGatewayFrontendIPConfig -ApplicationGateway $appGW
-$ip = Get-AzPublicIpAddress -name "wssecurity" + $deploymentId + "-pip"
+$pipName = "wssecurity" + $deploymentId + "-pip"
+$ip = Get-AzPublicIpAddress -name $pipName
 $wafIp = $ip.IpAddress;
 
 #get the app svc url
