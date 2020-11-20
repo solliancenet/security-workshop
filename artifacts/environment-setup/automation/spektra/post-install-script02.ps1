@@ -137,7 +137,7 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
 
 CreateLabFilesDirectory
-mkdir c:\temp
+mkdir c:\temp -ea SilentlyContinue
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
@@ -192,7 +192,7 @@ $appUrl = "https://" + $app.HostNames[0];
 
 #get the workspace Id
 $wsName = "wssecurity" + $deploymentId;
-$ws = Get-AzOperationalInsightsWorkspace -Name $wsName;
+$ws = Get-AzOperationalInsightsWorkspace -Name $wsName -ResourceGroup $resourceGroupName;
 $workspaceId = $ws.CustomerId;
 $keys = Get-AzOperationalInsightsWorkspaceSharedKey -ResourceGroup $resourceGroupName -Name $wsName;
 $workspaceKey = $keys.PrimarySharedKey;
