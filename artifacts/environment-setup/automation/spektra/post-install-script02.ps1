@@ -138,6 +138,7 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 
 CreateLabFilesDirectory
 mkdir c:\temp -ea SilentlyContinue
+mkdir c:\logs -ea SilentlyContinue
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
@@ -204,9 +205,12 @@ $content = $content.replace("#IN_WORKSPACE_KEY#",$workspaceKey);
 $content = $content.replace("#IN_SUBSCRIPTION_ID#",$azureSubscriptionID);
 $content = $content.replace("#IN_RESOURCE_GROUP_NAME#",$resourceGroupName);
 $content = $content.replace("#IN_DEPLOYMENT_ID#",$deploymentId);
+$content = $content.replace("#IN_IP#","192.168.102.2");
 $content = $content.replace("#IN_WAF_IP#",$wafIp);
 $content = $content.replace("#IN_APP_SVC_URL#",$appUrl);
 set-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" $content;
+
+. "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1"
 
 #add to HOSTS
 $line = "#$wafIp`t$appUrl"

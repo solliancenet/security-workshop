@@ -4,15 +4,22 @@ function UpdateFile($fileName, $tokens)
 {
     $content = Get-Content $fileName -raw
 
-    foreach($key in $tokens.keys)
+    if ($content)
     {
-        $content = $content.replace($key,$tokens[$key]);
+        foreach($key in $tokens.keys)
+        {
+            $content = $content.replace($key,$tokens[$key]);
+        }
     }
+
+    Set-Content $fileName $content;
 }
 
+cd C:\LabFiles\security-workshop\artifacts
+
 $ht = new-object System.Collections.Hashtable;
-$ht.add("#TODAY#",[DateTime]::NOW.ToString("YYYY-mm-DD"));
-$ht.add("#TIMESTAMP#",[DateTime]::NOW.tostring("YYYY-mm-DD HH:MM:SS"));
+$ht.add("#TODAY#",[DateTime]::NOW.ToString("yyyy-MM-dd"));
+$ht.add("#TIMESTAMP#",[DateTime]::NOW.tostring("yyyy-MM-dd HH:MM:SS"));
 $ht.add("#WORKSPACE_ID#", "#IN_WORKSPACE_ID#");
 $ht.add("#WORKSPACE_KEY#", "#IN_WORKSPACE_KEY#");
 $ht.add("#SUBSCRIPTION_ID#", "#IN_SUBSCRIPTION_ID#");
@@ -25,6 +32,7 @@ $ht.add("#IP_2#", "80.89.137.214");
 $ht.add("#IP_3#", "117.82.191.160");
 
 UpdateFile "logfile.txt" $ht;
+UpdateFile "DataCollector.ps1" $ht;
 UpdateFile "host_logins.csv" $ht;
 UpdateFile "logs.json" $ht;
 UpdateFile "webattack.ps1" $ht;
