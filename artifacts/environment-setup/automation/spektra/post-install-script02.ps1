@@ -212,6 +212,10 @@ set-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" $conte
 $line = "#$wafIp`t$appUrl"
 add-content "c:\windows\system32\drivers\etc\HOSTS" $line
 
+#set the keyvault
+$keyVaultName = "wssecurity$deploymentId-kv";
+Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list -PermissionsToKeys update,delete,get,list
+
 sleep 20
 
 Stop-Transcript
