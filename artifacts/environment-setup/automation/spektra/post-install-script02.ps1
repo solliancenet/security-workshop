@@ -146,7 +146,7 @@ InstallAzCli
 
 InstallNotepadPP
 
-#InstallGit
+InstallGit
 
 CreateLabFilesDirectory
 
@@ -155,6 +155,8 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 cd "c:\labfiles";
 
 Uninstall-AzureRm
+
+. C:\LabFiles\AzureCreds.ps1
 
 $userName = $AzureUserName                # READ FROM FILE
 $password = $AzurePassword                # READ FROM FILE
@@ -169,14 +171,23 @@ Connect-AzAccount -Credential $cred | Out-Null
 git clone https://github.com/solliancenet/security-workshop.git
 
 #get the waf public IP
-$wafIp = "";
+$wafName = "wssecurity" + $deploymentId + "-ag";
+$appGW = Get-AzApplicationGateway -name $wafName;
+$fipconfig = Get-AzApplicationGatewayFrontendIPConfig -ApplicationGateway $appGW
+$ip = Get-AzPublicIpAddress -name "wssecurity" + $deploymentId + "-pip"
+$wafIp = $ip.IpAddress;
 
 #get the app svc url
-$appUrl = "";
+$webAppName = "wssecurity" + $deploymentId;
+$app = Get-AzWebApp -Name $webAppName
+$appUrl = "https://" + $app.HostNames[0];
 
 #get the workspace Id
-$workspaceId = "";
-$workspaceKey = "";
+$wsName = "wssecurity" + $deploymentId;
+$ws = Get-AzOperationalInsightsWorkspace -Name $wsName;
+$workspaceId = $ws.CustomerId;
+$keys = Get-AzOperationalInsightsWorkspaceSharedKey -ResourceGroup $resourceGroupName -Name $wsName;
+$workspaceKey = $keys.PrimarySharedKey;
 
 #update the updatedatafiles.ps1
 $content = get-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" -raw
