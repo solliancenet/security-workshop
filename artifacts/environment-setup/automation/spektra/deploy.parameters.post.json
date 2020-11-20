@@ -13,6 +13,9 @@
       },
       "region": {
         "value": "GET-REGION"
+      },
+      "deploymentId": {
+        "value": "GET-DEPLOYMENT-ID"
       }
     }
   }

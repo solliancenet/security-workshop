@@ -50,7 +50,8 @@
         "West Cental US 2" : { "region": "West Cental US 2"},
         "West Europe" : { "region": "West Europe"},
         "West US 2" : { "region": "West US 2"}
-      }
+      },
+      "vmName": "[concat('labvm-',parameters('uniqueSuffix'))]"
   },
   "resources": [
       {
@@ -791,7 +792,7 @@
         "resources": [
             {
               "type": "Microsoft.Compute/virtualMachines/extensions",
-              "name": "[concat(variables('vmName'),'/', 'winExtension')]",
+              "name": "[concat(variables('resourceName'),'-paw-1','/', 'winExtension')]",
               "apiVersion": "2015-06-15",
               "location": "[resourceGroup().location]",
               "comments": "Script",
@@ -799,7 +800,7 @@
                 "displayName": "VM Extension"
               },
               "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+                "[concat('Microsoft.Compute/virtualMachines/', concat(variables('resourceName'),'-paw-1'))]"
               ],
               "properties": {
                 "publisher": "Microsoft.Compute",

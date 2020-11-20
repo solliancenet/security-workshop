@@ -217,7 +217,7 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
   -TemplateParameterFile "$($parametersFile).json"
 
 $keyVaultName = "wssecurity$deploymentId-kv";
-Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list -PermissionsToKeys set,delete,get,list
+Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list -PermissionsToKeys update,delete,get,list
 
 Publish-AzWebapp -ResourceGroupName $resourceGroupName -Name "wssecurity$deploymentId" -ArchivePath "c:\labfiles\security-workshop\artifacts\AzureKeyVaultMSI.zip" -force
 
