@@ -59,9 +59,8 @@ function InstallPutty()
 		Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\putty.msi"
         
         msiexec.exe /I c:\temp\Putty.msi /quiet
-	}
+  }
 }
-
 
 function InstallFiddler
 {
@@ -186,6 +185,7 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
 
 CreateLabFilesDirectory
+
 mkdir c:\temp -ea SilentlyContinue
 mkdir c:\logs -ea SilentlyContinue
 
@@ -211,7 +211,10 @@ InstallGit
 
 InstallChocolaty
 
-InstallFiddler
+InstallFiddler;
+
+#do twice...just in case.
+InstallFiddler;
 
 Uninstall-AzureRm
 
@@ -276,6 +279,7 @@ add-content "c:\windows\system32\drivers\etc\HOSTS" $line
 
 #set the keyvault
 $keyVaultName = "wssecurity$deploymentId-kv";
+Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list -PermissionsToKeys update,delete,get,list
 Set-AzKeyVaultAccessPolicy -ResourceGroupName $resourceGroupName -VaultName $keyVaultName -UserPrincipalName $userName -PermissionsToSecrets set,delete,get,list -PermissionsToKeys update,delete,get,list
 
 sleep 20

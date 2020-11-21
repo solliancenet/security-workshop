@@ -315,10 +315,30 @@
           }
       },
       {
+        "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
+        "apiVersion": "2015-11-01-preview",
+        "name": "[concat(parameters('resourceName'), '/' , 'Automation')]",
+        "location": "[variables('location')]",
+        "properties": {
+            "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', variables('resourceName'))]"
+        }
+    },
+      {
         "type": "Microsoft.Automation/automationAccounts",
         "apiVersion": "2015-10-31",
         "name": "[variables('resourceName')]",
         "location": "[variables('automationMap')[variables('location')].region]",
+        "properties": {
+            "sku": {
+                "name": "Basic"
+            }
+        }
+    },
+    {
+        "type": "Microsoft.Automation/automationAccounts",
+        "apiVersion": "2015-10-31",
+        "name": "[concat(variables('resourceName'), '-eus2')]",
+        "location": "eastus2",
         "properties": {
             "sku": {
                 "name": "Basic"
