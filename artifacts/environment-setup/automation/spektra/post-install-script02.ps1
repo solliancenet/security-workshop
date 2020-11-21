@@ -19,6 +19,17 @@ Param (
   $deploymentId
 )
 
+function InstallChrome()
+{
+    write-host "Installing Chrome";
+
+    $Path = "c:\temp"; 
+    $Installer = "chrome_installer.exe"; 
+    Invoke-WebRequest "http://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile $Path\$Installer; 
+    Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait; 
+    Remove-Item $Path\$Installer
+}
+
 function InstallChocolaty()
 {
   $env:chocolateyUseWindowsCompression = 'true'
@@ -30,6 +41,27 @@ function InstallChocolaty()
 
   choco feature enable -n allowGlobalConfirmation
 }
+
+function InstallPutty()
+{
+    write-host "Installing Putty";
+
+    #check for executables...
+	$item = get-item "C:\Program Files\Putty\putty.exe" -ea silentlycontinue;
+	
+	if (!$item)
+	{
+		$downloadNotePad = "https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.74-installer.msi";
+
+        mkdir c:\temp -ea silentlycontinue 
+		
+		#download it...		
+		Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\putty.msi"
+        
+        msiexec.exe /I c:\temp\Putty.msi /quiet
+	}
+}
+
 
 function InstallFiddler
 {
@@ -169,7 +201,11 @@ InstallAzPowerShellModule
 
 InstallAzCli
 
+InstallChrome
+
 InstallNotepadPP
+
+InstallPutty
 
 InstallGit
 

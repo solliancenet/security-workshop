@@ -53,19 +53,10 @@
     "rgName": "[resourceGroup().name]",
     "resourceName": "[concat('wssecurity',parameters('uniqueSuffix'))]",
     "automationMap" : {
-        "Australia Southeast" : { "region": "Australia Southeast"},
-        "Canada Central" : { "region": "Canada Central"},
-        "Central India" : { "region": "Central India"},
-        "East US" : { "region": "East US"},
-        "East US 2" : { "region": "East US"},
-        "Japan East" : { "region": "Japan East"},
-        "South Central US" : { "region": "South Central US"},
-        "Southeast Asia" : { "region": "Southeast Asia"},
-        "UK South" : { "region": "UK South"},
-        "West Cental US" : { "region": "West Cental US 2"},
-        "West Cental US 2" : { "region": "West Cental US 2"},
-        "West Europe" : { "region": "West Europe"},
-        "West US 2" : { "region": "West US 2"}
+        "eastus" : { "region": "East US 2"},
+        "southcentralus" : { "region": "South Central US"},
+        "westcentralus" : { "region": "West Cental US"},
+        "westus2" : { "region": "West US 2"}
     },
     "vmName": "[concat('labvm-',parameters('uniqueSuffix'))]"
   },
@@ -327,18 +318,58 @@
         "type": "Microsoft.Automation/automationAccounts",
         "apiVersion": "2015-10-31",
         "name": "[variables('resourceName')]",
-        "location": "West US 2",
+        "location": "[variables('automationMap')[variables('location')].region]",
         "properties": {
             "sku": {
                 "name": "Basic"
             }
         }
     },
+    {
+        "type": "Microsoft.ContainerRegistry/registries",
+        "apiVersion": "2019-05-01",
+        "name": "[variables('resourceName')]",
+        "location": "[variables('location')]",
+        "dependsOn": [
+        ],
+        "sku": {
+            "name": "Basic"
+        },
+        "properties": {
+            "adminUserEnabled": true
+        }
+    },
+    {
+        "type": "Microsoft.MachineLearningServices/workspaces",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('resourceName')]",
+        "location": "[variables('location')]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('resourceName'))]",
+            "[resourceId('Microsoft.KeyVault/vaults', concat(variables('resourceName'), '-kv'))]",
+            "[resourceId('Microsoft.Insights/components', variables('resourceName'))]",
+            "[resourceId('Microsoft.ContainerRegistry/registries', variables('resourceName'))]"
+        ],
+        "sku": {
+            "tier": "Basic",
+            "name": "Basic"
+        },
+        "identity": {
+            "type": "systemAssigned"
+        },
+        "properties": {
+            "friendlyName": "[variables('resourceName')]",
+            "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('resourceName'))]",
+            "containerRegistry": "[resourceId('Microsoft.ContainerRegistry/registries', variables('resourceName'))]",
+            "keyVault": "[resourceId('Microsoft.KeyVault/vaults', concat(variables('resourceName'), '-kv'))]",
+            "applicationInsights": "[resourceId('microsoft.insights/components', variables('resourceName'))]"
+        }
+    },
       {
           "type": "microsoft.operationalinsights/workspaces",
           "apiVersion": "2020-03-01-preview",
           "name": "[variables('resourceName')]",
-          "location": "West US 2",
+          "location": "[variables('location')]",
           "properties": {
               "sku": {
                   "name": "pergb2018"

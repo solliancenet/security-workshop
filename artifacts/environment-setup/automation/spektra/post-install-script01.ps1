@@ -30,7 +30,6 @@ function InstallChrome()
     Remove-Item $Path\$Installer
 }
 
-
 function InstallPutty()
 {
     write-host "Installing Putty";
