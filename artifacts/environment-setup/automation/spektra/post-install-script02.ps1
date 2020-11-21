@@ -19,6 +19,23 @@ Param (
   $deploymentId
 )
 
+function InstallChocolaty()
+{
+  $env:chocolateyUseWindowsCompression = 'true'
+  Set-ExecutionPolicy Bypass -Scope Process -Force; 
+  [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; 
+  iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+  choco feature enable -n allowGlobalConfirmation
+}
+
+function InstallFiddler
+{
+  choco install fiddler
+}
+
 function InstallGit
 {
   #download and install git...		
@@ -156,6 +173,10 @@ InstallNotepadPP
 
 InstallGit
 
+InstallChocolaty
+
+InstallFiddler
+
 Uninstall-AzureRm
 
 CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
@@ -189,7 +210,8 @@ $wafIp = $ip.IpAddress;
 #get the app svc url
 $webAppName = "wssecurity" + $deploymentId;
 $app = Get-AzWebApp -Name $webAppName
-$appUrl = "https://" + $app.HostNames[0];
+$appHost = $app.HostNames[0];
+$appUrlFull = "https://" + $app.HostNames[0];
 
 #get the workspace Id
 $wsName = "wssecurity" + $deploymentId;
@@ -207,13 +229,13 @@ $content = $content.replace("#IN_RESOURCE_GROUP_NAME#",$resourceGroupName);
 $content = $content.replace("#IN_DEPLOYMENT_ID#",$deploymentId);
 $content = $content.replace("#IN_IP#","192.168.102.2");
 $content = $content.replace("#IN_WAF_IP#",$wafIp);
-$content = $content.replace("#IN_APP_SVC_URL#",$appUrl);
+$content = $content.replace("#IN_APP_SVC_URL#",$appHost);
 set-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" $content;
 
 . "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1"
 
 #add to HOSTS
-$line = "#$wafIp`t$appUrl"
+$line = "#$wafIp`t$appHost"
 add-content "c:\windows\system32\drivers\etc\HOSTS" $line
 
 #set the keyvault

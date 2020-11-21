@@ -537,7 +537,7 @@ function Attack_XSS($url)
 #$url = read-host "what is your url";
 
 $ipAddress = "#WAF_IP#";
-$url = "#APP_SVC_URL#"
+$url = "http://#APP_SVC_URL#"
 
 Attack_HostHeaderIP $ipAddress;
 
