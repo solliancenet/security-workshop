@@ -20,6 +20,7 @@ cd C:\LabFiles\security-workshop\artifacts
 $ht = new-object System.Collections.Hashtable;
 $ht.add("#TODAY#",[DateTime]::NOW.ToString("yyyy-MM-dd"));
 $ht.add("#TIMESTAMP#",[DateTime]::NOW.tostring("yyyy-MM-dd HH:MM:SS"));
+$ht.add("#WORKSPACE_NAME#", "#IN_WORKSPACE_NAME#");
 $ht.add("#WORKSPACE_ID#", "#IN_WORKSPACE_ID#");
 $ht.add("#WORKSPACE_KEY#", "#IN_WORKSPACE_KEY#");
 $ht.add("#SUBSCRIPTION_ID#", "#IN_SUBSCRIPTION_ID#");
@@ -35,6 +36,8 @@ UpdateFile "logfile.txt" $ht;
 UpdateFile "DataCollector.ps1" $ht;
 UpdateFile "host_logins.csv" $ht;
 UpdateFile "logs.json" $ht;
+UpdateFile "Azure Sentinel ML.ipynb" $ht;
+UpdateFile "aad_logons.pkl" $ht;
 UpdateFile "webattack.ps1" $ht;
 UpdateFile "./logs-01/logs-01.log" $ht;
 UpdateFile "./logs-01/logs-02.log" $ht;

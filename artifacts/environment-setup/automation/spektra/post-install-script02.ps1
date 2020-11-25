@@ -19,6 +19,62 @@ Param (
   $deploymentId
 )
 
+function Check-HttpRedirect($uri)
+{
+    $httpReq = [system.net.HttpWebRequest]::Create($uri)
+    $httpReq.Accept = "text/html, application/xhtml+xml, */*"
+    $httpReq.method = "GET"   
+    $httpReq.AllowAutoRedirect = $false;
+    
+    #use them all...
+    #[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Ssl3 -bor [System.Net.SecurityProtocolType]::Tls;
+
+    $global:httpCode = -1;
+    
+    $response = "";            
+
+    try
+    {
+        $res = $httpReq.GetResponse();
+
+        $statusCode = $res.StatusCode.ToString();
+        $global:httpCode = [int]$res.StatusCode;
+        $cookieC = $res.Cookies;
+        $resHeaders = $res.Headers;  
+        $global:rescontentLength = $res.ContentLength;
+        $global:location = $null;
+                                
+        try
+        {
+            $global:location = $res.Headers["Location"].ToString();
+            return $global:location;
+        }
+        catch
+        {
+        }
+
+        return $null;
+
+    }
+    catch
+    {
+        $res2 = $_.Exception.InnerException.Response;
+        $global:httpCode = $_.Exception.InnerException.HResult;
+        $global:httperror = $_.exception.message;
+
+        try
+        {
+            $global:location = $res2.Headers["Location"].ToString();
+            return $global:location;
+        }
+        catch
+        {
+        }
+    } 
+
+    return $null;
+}
+
 function InstallChrome()
 {
     write-host "Installing Chrome";
@@ -261,6 +317,7 @@ $workspaceKey = $keys.PrimarySharedKey;
 
 #update the updatedatafiles.ps1
 $content = get-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" -raw
+$content = $content.replace("#IN_WORKSPACE_NAME#",$wsName);
 $content = $content.replace("#IN_WORKSPACE_ID#",$workspaceId);
 $content = $content.replace("#IN_WORKSPACE_KEY#",$workspaceKey);
 $content = $content.replace("#IN_SUBSCRIPTION_ID#",$azureSubscriptionID);
@@ -272,6 +329,46 @@ $content = $content.replace("#IN_APP_SVC_URL#",$appHost);
 set-content "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1" $content;
 
 . "c:\labfiles\security-workshop\artifacts\updatedatafiles.ps1"
+
+#install azcopy
+$azCopyLink = Check-HttpRedirect "https://aka.ms/downloadazcopy-v10-windows"
+
+if (!$azCopyLink)
+{
+        $azCopyLink = "https://azcopyvnext.azureedge.net/release20200501/azcopy_windows_amd64_10.4.3.zip"
+}
+
+Invoke-WebRequest $azCopyLink -OutFile "azCopy.zip"
+Expand-Archive "azCopy.zip" -DestinationPath ".\" -Force
+$azCopyCommand = (Get-ChildItem -Path ".\" -Recurse azcopy.exe).Directory.FullName
+$azCopyCommand += "\azcopy"
+
+#upload the updated login files to azure storage
+$wsName = "wssecurity" + $deploymentId;
+$dataLakeStorageBlobUrl = "https://"+ $wsName + ".blob.core.windows.net/"
+$dataLakeStorageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroupName -AccountName $wsName)[0].Value
+$dataLakeContext = New-AzStorageContext -StorageAccountName $wsName -StorageAccountKey $dataLakeStorageAccountKey
+$container = New-AzStorageContainer -Permission Container -name "logs" -context $dataLakeContext;
+$destinationSasKey = New-AzStorageContainerSASToken -Container "logs" -Context $dataLakeContext -Permission rwdl
+
+Write-Information "Copying single files from local..."
+
+$singleFiles = @{
+  queries = "c:\labfiles\security-workshop\artifacts\queries.yaml,logs/queries.yaml"
+  aad_logons = "c:\labfiles\security-workshop\artifacts\aad_logons.pkl,logs/aad_logon.pkl"
+  host_logins = "c:\labfiles\security-workshop\artifacts\host_logins.csv,logs/host_logins.csv"
+}
+
+foreach ($singleFile in $singleFiles.Keys) 
+{
+  $vals = $singleFiles[$singleFile].split(",");
+  $vals;
+  $source = $vals[0]
+  $destination = $dataLakeStorageBlobUrl + $vals[1] + $destinationSasKey
+  Write-Host "Copying file $($source) to $($destination)"
+  Write-Information "Copying file $($source) to $($destination)"
+  & $azCopyCommand copy $source $destination 
+}
 
 #add to HOSTS
 $line = "#$wafIp`t$appHost"
