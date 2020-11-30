@@ -167,6 +167,15 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 [Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
 
+Set-Executionpolicy unrestricted -force
+
+CreateLabFilesDirectory
+
+mkdir c:\temp -ea silentlycontinue
+cd c:\temp
+
+cd "c:\labfiles";
+
 DisableInternetExplorerESC
 
 EnableIEFileDownload
@@ -183,9 +192,9 @@ InstallChrome
 
 InstallGit
 
-CreateLabFilesDirectory
-
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
 
 cd "c:\labfiles";
 
@@ -199,6 +208,7 @@ $userName = $AzureUserName                # READ FROM FILE
 $password = $AzurePassword                # READ FROM FILE
 $clientId = $TokenGeneratorClientId       # READ FROM FILE
 $global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
+$global:localusername = "wsuser";
 
 $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
