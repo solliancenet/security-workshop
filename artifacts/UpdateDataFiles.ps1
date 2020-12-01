@@ -31,9 +31,9 @@ $ht.add("#RESOURCE_GROUP_NAME#", "#IN_RESOURCE_GROUP_NAME#");
 $ht.add("#DEPLOYMENT_ID#", "#IN_DEPLOYMENT_ID#");
 $ht.add("#WAF_IP#", "#IN_WAF_IP#");
 $ht.add("#APP_SVC_URL#", "#IN_APP_SVC_URL#");
-$ht.add("#IP_1#", "203.160.71.100");
-$ht.add("#IP_2#", "80.89.137.214");
-$ht.add("#IP_3#", "117.82.191.160");
+$ht.add("#IP_1#", "203.160.71.100"); #china
+$ht.add("#IP_2#", "80.89.137.214"); #russia
+$ht.add("#IP_3#", "117.82.191.160"); #china
 
 UpdateFile "logfile.txt" $ht;
 UpdateFile "DataCollector.ps1" $ht;

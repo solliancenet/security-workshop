@@ -196,6 +196,8 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
 
+wevtutil set-log Microsoft-Windows-TaskScheduler/Operational /enabled:true
+
 cd "c:\labfiles";
 
 CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
