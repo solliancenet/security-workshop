@@ -317,7 +317,7 @@
       {
         "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
         "apiVersion": "2015-11-01-preview",
-        "name": "[concat(parameters('resourceName'), '/' , 'Automation')]",
+        "name": "[concat(variables('resourceName'), '/' , 'Automation')]",
         "location": "[variables('location')]",
         "properties": {
             "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', variables('resourceName'))]"
