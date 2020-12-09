@@ -46,9 +46,11 @@ DisableInternetExplorerESC
 
 EnableIEFileDownload
 
+InstallChocolaty
+
 InstallAzPowerShellModule
 
-InstallAzCli
+InstallAzureCli
 
 InstallNotepadPP
 
