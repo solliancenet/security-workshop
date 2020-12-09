@@ -321,7 +321,10 @@
         "location": "[variables('location')]",
         "properties": {
             "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', variables('resourceName'))]"
-        }
+        },
+        "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', variables('resourceName'))]"
+        ]
     },
       {
         "type": "Microsoft.Automation/automationAccounts",
