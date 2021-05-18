@@ -52,6 +52,8 @@ InstallAzPowerShellModule
 
 InstallAzureCli
 
+InstallFiddler
+
 InstallNotepadPP
 
 InstallPutty
