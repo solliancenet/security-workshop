@@ -48,6 +48,11 @@
           "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/labs/02_Lab03.md",
           "Order": 10
         }
+        ,
+        {
+          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/security-workshop/master/labs/02_Lab04.md",
+          "Order": 11
+        }
       ]
     }
   ]

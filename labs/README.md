@@ -18,6 +18,8 @@ The following are the labs you will perform on each day.
 
 - [Lab 1: Azure Sentinel (Basics, Hunting, Notebooks)](./02_Lab01.md)
 - [Lab 2: Log Analytics Solutions with Azure Security Center](./02_Lab02.md)
+- [Lab 3: Create TAXII Connections](./02_Lab03.md)
+- [Lab 4: Follow Microsoft Security Team Members](./02_Lab04.md)
 
 ## Reference Links
 
